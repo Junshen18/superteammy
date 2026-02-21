@@ -62,7 +62,7 @@ export default function AdminEventsPage() {
     <div>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="font-[family-name:var(--font-space-grotesk)] text-2xl font-bold text-white">Events</h1>
+          <h1 className="font-[family-name:var(--font-orbitron)] text-2xl font-bold text-white">Events</h1>
           <p className="text-sm text-muted mt-1">Manage events and meetups</p>
         </div>
         <button

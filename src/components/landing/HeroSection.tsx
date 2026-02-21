@@ -1,142 +1,329 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import Script from "next/script";
+import Image from "next/image";
 import Link from "next/link";
-import { SuperteamLogo } from "@/components/ui/SuperteamLogo";
+import { useScramble } from "use-scramble";
+import { useLoading } from "@/contexts/LoadingContext";
+
+const heroNavLinks = [
+  { href: "#about", label: "MISSIONS" },
+  { href: "#impact", label: "IMPACTS" },
+  { href: "#events", label: "EVENTS" },
+  { href: "/members", label: "MEMBERS" },
+  { href: "#ecosystem", label: "ECOSYSTEMS" },
+  { href: "#community", label: "WALLOFLOVES" },
+  { href: "#faq", label: "FAQ" },
+];
+
+function ScrambleLink({
+  href,
+  text,
+  delay,
+}: {
+  href: string;
+  text: string;
+  delay: number;
+}) {
+  const [started, setStarted] = useState(false);
+  const canReplayRef = useRef(true);
+  const { ref, replay } = useScramble({
+    text,
+    speed: 0.5,
+    tick: 2,
+    step: 1,
+    scramble: 3,
+    seed: 2,
+    chance: 0.8,
+    overdrive: false,
+    overflow: false,
+    playOnMount: false,
+  });
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setStarted(true);
+      replay();
+    }, delay);
+    return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [delay]);
+
+  const handleMouseEnter = () => {
+    if (canReplayRef.current) {
+      canReplayRef.current = false;
+      replay();
+    }
+  };
+
+  const handleMouseLeave = () => {
+    canReplayRef.current = true;
+  };
+
+  return (
+    <Link
+      href={href}
+      className="group flex items-center gap-1.5 transition-opacity duration-300 hover:text-solana-green"
+      style={{ opacity: started ? 1 : 0 }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <span className="w-1 h-1 shrink-0 rounded-full bg-current opacity-0 transition-opacity duration-200 group-hover:opacity-100" aria-hidden />
+      <span ref={ref} className="pointer-events-none" />
+    </Link>
+  );
+}
+
+function getMalaysiaTime() {
+  return new Date().toLocaleTimeString("en-GB", {
+    timeZone: "Asia/Kuala_Lumpur",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+}
+
+function CtaButton({
+  href,
+  text,
+  external,
+}: {
+  href: string;
+  text: string;
+  external?: boolean;
+}) {
+  const canReplayRef = useRef(true);
+  const { ref, replay } = useScramble({
+    text,
+    speed: 0.5,
+    tick: 2,
+    step: 1,
+    scramble: 3,
+    seed: 2,
+    chance: 0.8,
+    overdrive: false,
+    overflow: false,
+    playOnMount: true,
+  });
+
+  const handleMouseEnter = () => {
+    if (canReplayRef.current) {
+      canReplayRef.current = false;
+      replay();
+    }
+  };
+
+  const handleMouseLeave = () => {
+    canReplayRef.current = true;
+  };
+
+  const baseClass =
+    "group relative shrink-0 w-[145px] min-w-[145px] rounded-sm text-center overflow-hidden border border-white/40 px-5 py-2.5 font-[family-name:var(--font-orbitron)] text-sm tracking-widest text-white font-medium uppercase transition-colors duration-300 hover:border-white";
+
+  const content = (
+    <>
+      <span
+        className="absolute inset-0 z-0 origin-left scale-x-0 bg-white transition-transform duration-300 ease-out group-hover:scale-x-100"
+        aria-hidden
+      />
+      <span
+        ref={ref}
+        className="relative z-10 pointer-events-none transition-colors duration-300 group-hover:text-black"
+      />
+    </>
+  );
+
+  if (external) {
+    return (
+      <Link
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={baseClass}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <Link
+      href={href}
+      className={baseClass}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {content}
+    </Link>
+  );
+}
+
+function MalaysiaTime() {
+  const [time, setTime] = useState(getMalaysiaTime);
+
+  useEffect(() => {
+    const interval = setInterval(() => setTime(getMalaysiaTime()), 10_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <span
+      className="font-[family-name:var(--font-orbitron)] tracking-wider text-white/70"
+      style={{ fontSize: 12 }}
+    >
+      {time} (GMT+8)
+    </span>
+  );
+}
 
 export function HeroSection() {
+  const { loading } = useLoading();
+  const backgroundRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          if (backgroundRef.current) {
+            const scrollY = window.scrollY;
+            backgroundRef.current.style.transform = `translate3d(0, ${scrollY * 0.2}px, 0)`;
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const { ref: headingRef, replay: replayHeading } = useScramble({
+    text: "THE HOME OF SOLANA\nBUILDERS IN MALAYSIA",
+    speed: 0.5,
+    tick: 2,
+    step: 2,
+    scramble: 3,
+    seed: 2,
+    chance: 0.8,
+    overdrive: false,
+    overflow: false,
+    playOnMount: false,
+  });
+
+  useEffect(() => {
+    if (!loading) {
+      replayHeading();
+    }
+  }, [loading, replayHeading]);
+
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
-      {/* Background Effects */}
-      <div className="absolute inset-0">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-solana-purple/10 rounded-full blur-[128px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-solana-green/8 rounded-full blur-[128px]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-solana-purple/5 rounded-full blur-[200px]" />
-        {/* Grid pattern */}
+    <section
+      id="hero"
+      className="relative min-h-screen flex flex-col"
+      style={{ zIndex: 0 }}
+    >
+      {/* Unicorn Studio Background — parallax layer */}
+      <div
+        ref={backgroundRef}
+        className="absolute inset-0 w-full h-full will-change-transform"
+      >
         <div
-          className="absolute inset-0 opacity-[0.03]"
+          data-us-project="4ICJyh1ZdclndHQ7640M"
+          className="absolute inset-0 w-full h-full min-w-full min-h-full"
           style={{
-            backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-                             linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-            backgroundSize: "64px 64px",
+            width: "100%",
+            height: "100%",
+            minWidth: "100%",
+            minHeight: "100%",
           }}
         />
-        {/* Animated Superteam Logo - large background accent */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 0.04, scale: 1 }}
-            transition={{ duration: 1.5, delay: 0.3 }}
-          >
-            <SuperteamLogo
-              className="w-[500px] h-[380px] md:w-[700px] md:h-[530px] lg:w-[900px] lg:h-[685px]"
-              animated={true}
-              color="white"
-            />
-          </motion.div>
-        </div>
       </div>
+      <Script id="unicorn-studio" strategy="afterInteractive">
+        {`!function(){var u=window.UnicornStudio;if(u&&u.init){if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",function(){u.init()})}else{u.init()}}else{window.UnicornStudio={isInitialized:!1};var i=document.createElement("script");i.src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v2.0.5/dist/unicornStudio.umd.js",i.onload=function(){if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",function(){UnicornStudio.init()})}else{UnicornStudio.init()}},(document.head||document.body).appendChild(i)}}();`}
+      </Script>
 
-      <div className="relative max-w-7xl mx-auto px-6 lg:px-8 text-center">
-        {/* Small animated logo above badge */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
-          className="mb-6 flex justify-center"
-        >
-          <SuperteamLogo
-            className="w-[52px] h-[40px]"
-            animated={true}
-            color="url(#hero-logo-gradient)"
-          />
-          {/* Hidden gradient definition for the small logo */}
-          <svg width="0" height="0" className="absolute">
-            <defs>
-              <linearGradient id="hero-logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#9945FF" />
-                <stop offset="100%" stopColor="#14F195" />
-              </linearGradient>
-            </defs>
-          </svg>
-        </motion.div>
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-black/10 pointer-events-none" />
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-solana-purple/30 bg-solana-purple/5 mb-8">
-            <Sparkles className="w-4 h-4 text-solana-green" />
-            <span className="text-sm text-muted">
-              The Home for Solana Builders in Malaysia
-            </span>
+      {/* Content */}
+      <div className="relative z-10 flex flex-col h-screen px-8 md:px-16 py-10 ">
+        <div className="flex items-center justify-between w-full gap-4 pt-4">
+          <div className="flex-1 min-w-0 h-px bg-white/20" />
+          {/* Top: Logo centered */}
+          <div className="flex items-center justify-center">
+            <Image
+              src="/superteam.svg"
+              alt="Superteam Malaysia"
+              width={154}
+              height={18}
+              className="h-5 w-auto"
+              priority
+            />
           </div>
-        </motion.div>
+          <div className="flex-1 min-w-0 h-px bg-white/20" />
+        </div>
 
-        <motion.h1
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.3 }}
-          className="font-[family-name:var(--font-space-grotesk)] text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.05] mb-6"
-        >
-          Build the Future
-          <br />
-          of{" "}
-          <span className="gradient-text">Web3 in Malaysia</span>
-        </motion.h1>
 
-        <motion.p
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.45 }}
-          className="text-lg md:text-xl text-muted max-w-2xl mx-auto mb-10 leading-relaxed"
-        >
-          Superteam Malaysia connects builders, creators, and founders in the
-          Solana ecosystem. Access grants, bounties, hackathons, and a global
-          network of Web3 talent.
-        </motion.p>
-
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.6 }}
-          className="flex flex-col sm:flex-row gap-4 justify-center"
-        >
-          <Link
-            href="https://t.me/superteammy"
-            target="_blank"
-            className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-base font-semibold text-white bg-gradient-to-r from-solana-purple to-solana-green hover:opacity-90 transition-all hover:scale-[1.02] active:scale-[0.98]"
+        {/* Middle row: Nav (left) | Logo + Heading (center) | Time (right) */}
+        <div className="flex-1 flex items-center w-full">
+          {/* Left: Nav links */}
+          <nav
+            className="hidden md:flex flex-col shrink-0 w-40 font-[family-name:var(--font-orbitron)] tracking-wider"
+            style={{ fontSize: 12, color: "#e4e4e4", gap: 4 }}
           >
-            Join Community
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-          <Link
-            href="https://earn.superteam.fun"
-            target="_blank"
-            className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-base font-medium text-white border border-white/10 hover:bg-white/5 transition-all hover:scale-[1.02] active:scale-[0.98]"
-          >
-            Explore Opportunities
-          </Link>
-        </motion.div>
+            {heroNavLinks.map((link, i) => (
+              <ScrambleLink
+                key={link.href}
+                href={link.href}
+                text={link.label}
+                delay={1200 + i * 150}
+              />
+            ))}
+          </nav>
 
-        {/* Scroll indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.5, duration: 1 }}
-          className="mt-20"
-        >
-          <motion.div
-            animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="w-6 h-10 rounded-full border-2 border-white/20 mx-auto flex justify-center pt-2"
-          >
-            <div className="w-1 h-2 bg-white/40 rounded-full" />
-          </motion.div>
-        </motion.div>
+          {/* Center: Logo + Heading */}
+          <div className="flex-1 flex flex-col items-center justify-center gap-4 relative">
+            <Image
+              src="/white-stmy-logo.png"
+              alt="Superteam Malaysia"
+              width={120}
+              height={120}
+              className="w-[120px] h-auto absolute -top-[100%] "
+              priority
+            />
+            <h2
+              ref={headingRef}
+              className="h-[120px] font-[family-name:var(--font-orbitron)] font-black text-2xl md:text-4xl lg:text-5xl text-white leading-tight whitespace-pre-line text-center transition-opacity duration-300"
+              style={{ opacity: loading ? 0 : 1 }}
+            />
+          </div>
+
+          {/* Right: Malaysia time */}
+          <div className="hidden md:flex items-end justify-end shrink-0 w-40">
+            <MalaysiaTime />
+          </div>
+        </div>
+
+
+        {/* Bottom: CTA buttons + Subtitle */}
+        <div className="flex items-center justify-between w-full gap-4">
+          <CtaButton href="https://t.me/superteammy" text="CONNECT" external />
+        <div className="flex-1 min-w-0 h-px bg-white/20" />
+
+
+          <p className="hidden md:block w-2xl text-center text-base text-white/80 leading-relaxed uppercase font-inter">
+            We connect local talent with global opportunities. Build, earn, and grow alongside Malaysia&apos;s most ambitious web3 community.
+          </p>
+        <div className="flex-1 min-w-0 h-px bg-white/20" />
+
+
+          <CtaButton href="#about" text="EXPLORE" />
+        </div>
       </div>
     </section>
   );

@@ -58,7 +58,7 @@ export default function AdminPartnersPage() {
     <div>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="font-[family-name:var(--font-space-grotesk)] text-2xl font-bold text-white">Partners</h1>
+          <h1 className="font-[family-name:var(--font-orbitron)] text-2xl font-bold text-white">Partners</h1>
           <p className="text-sm text-muted mt-1">Manage ecosystem partners and sponsors</p>
         </div>
         <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-solana-purple to-solana-green hover:opacity-90 transition-opacity">

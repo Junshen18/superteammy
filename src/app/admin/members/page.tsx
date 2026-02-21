@@ -88,7 +88,7 @@ export default function AdminMembersPage() {
     <div>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="font-[family-name:var(--font-space-grotesk)] text-2xl font-bold text-white">
+          <h1 className="font-[family-name:var(--font-orbitron)] text-2xl font-bold text-white">
             Members
           </h1>
           <p className="text-sm text-muted mt-1">

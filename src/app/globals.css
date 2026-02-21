@@ -11,8 +11,8 @@
   --color-solana-green: #14F195;
   --color-accent-gold: #F0C040;
   --color-border: rgba(255, 255, 255, 0.06);
-  --font-sans: var(--font-inter);
-  --font-display: var(--font-space-grotesk);
+  --font-sans: var(--font-archivo);
+  --font-display: var(--font-orbitron);
 }
 
 html {

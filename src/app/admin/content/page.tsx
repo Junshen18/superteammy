@@ -59,7 +59,7 @@ export default function AdminContentPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="font-[family-name:var(--font-space-grotesk)] text-2xl font-bold text-white">Site Content</h1>
+        <h1 className="font-[family-name:var(--font-orbitron)] text-2xl font-bold text-white">Site Content</h1>
         <p className="text-sm text-muted mt-1">Edit landing page text content</p>
       </div>
 

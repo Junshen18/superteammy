@@ -42,7 +42,7 @@ export default function MembersPage() {
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-solana-purple mb-4">
             Our Community
           </p>
-          <h1 className="font-[family-name:var(--font-space-grotesk)] text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
+          <h1 className="font-[family-name:var(--font-orbitron)] text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
             Member Directory
           </h1>
           <p className="text-lg text-muted max-w-2xl mx-auto">

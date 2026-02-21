@@ -86,7 +86,7 @@ export default function AdminLayout({
     return (
       <div className="min-h-screen flex items-center justify-center bg-background px-6">
         <div className="w-full max-w-md p-8 rounded-2xl bg-surface border border-white/5">
-          <h1 className="font-[family-name:var(--font-space-grotesk)] text-2xl font-bold text-white mb-2">
+          <h1 className="font-[family-name:var(--font-orbitron)] text-2xl font-bold text-white mb-2">
             Admin Login
           </h1>
           <p className="text-sm text-muted mb-8">

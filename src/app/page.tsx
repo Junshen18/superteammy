@@ -12,14 +12,16 @@ export default function Home() {
   return (
     <>
       <HeroSection />
-      <MissionSection />
-      <StatsSection />
-      <EventsSection />
-      <MembersSpotlight />
-      <PartnersSection />
-      <WallOfLove />
-      <FAQSection />
-      <JoinCTA />
+      <div className="relative z-10 bg-background">
+        <MissionSection />
+        <StatsSection />
+        <EventsSection />
+        <MembersSpotlight />
+        <PartnersSection />
+        <WallOfLove />
+        <FAQSection />
+        <JoinCTA />
+      </div>
     </>
   );
 }

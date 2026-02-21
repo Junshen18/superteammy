@@ -19,7 +19,8 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-intersection-observer": "^10.0.2",
-    "react-tweet": "^3.3.0"
+    "react-tweet": "^3.3.0",
+    "use-scramble": "^2.2.15"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

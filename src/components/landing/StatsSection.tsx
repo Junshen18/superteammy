@@ -29,7 +29,7 @@ export function StatsSection() {
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-solana-green mb-4">
             Our Impact
           </p>
-          <h2 className="font-[family-name:var(--font-space-grotesk)] text-3xl md:text-4xl lg:text-5xl font-bold text-white">
+          <h2 className="font-[family-name:var(--font-orbitron)] text-3xl md:text-4xl lg:text-5xl font-bold text-white">
             Growing the Solana Ecosystem
           </h2>
         </motion.div>
@@ -48,7 +48,7 @@ export function StatsSection() {
                 <div className="w-12 h-12 rounded-xl bg-solana-purple/10 flex items-center justify-center mx-auto mb-5 group-hover:bg-solana-purple/15 transition-colors">
                   <Icon className="w-6 h-6 text-solana-purple" />
                 </div>
-                <div className="font-[family-name:var(--font-space-grotesk)] text-4xl md:text-5xl font-bold gradient-text mb-2">
+                <div className="font-[family-name:var(--font-orbitron)] text-4xl md:text-5xl font-bold gradient-text mb-2">
                   <AnimatedCounter end={stat.value} suffix={stat.suffix} />
                 </div>
                 <p className="text-sm text-muted">{stat.label}</p>

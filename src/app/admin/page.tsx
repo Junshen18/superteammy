@@ -14,7 +14,7 @@ export default function AdminDashboard() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="font-[family-name:var(--font-space-grotesk)] text-2xl font-bold text-white">
+        <h1 className="font-[family-name:var(--font-orbitron)] text-2xl font-bold text-white">
           Dashboard
         </h1>
         <p className="text-sm text-muted mt-1">
@@ -36,7 +36,7 @@ export default function AdminDashboard() {
                 Manage &rarr;
               </span>
             </div>
-            <p className="font-[family-name:var(--font-space-grotesk)] text-3xl font-bold text-white mb-1">
+            <p className="font-[family-name:var(--font-orbitron)] text-3xl font-bold text-white mb-1">
               {stat.value}
             </p>
             <p className="text-sm text-muted">{stat.label}</p>

@@ -30,10 +30,10 @@ export function Footer() {
           {/* Brand Column */}
           <div className="md:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <span className="font-[family-name:var(--font-space-grotesk)] text-lg font-bold tracking-wider text-white">
+              <span className="font-[family-name:var(--font-orbitron)] text-lg font-bold tracking-wider text-white">
                 SUPERTEAM
               </span>
-              <span className="font-[family-name:var(--font-space-grotesk)] text-lg font-bold tracking-wider text-solana-purple">
+              <span className="font-[family-name:var(--font-orbitron)] text-lg font-bold tracking-wider text-solana-purple">
                 MY
               </span>
             </Link>

@@ -33,7 +33,7 @@ export function SectionHeading({
       >
         {label}
       </p>
-      <h2 className="font-[family-name:var(--font-space-grotesk)] text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
+      <h2 className="font-[family-name:var(--font-orbitron)] text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
         {title}
       </h2>
       {subtitle && (

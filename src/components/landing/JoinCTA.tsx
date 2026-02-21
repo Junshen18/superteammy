@@ -22,7 +22,7 @@ export function JoinCTA() {
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
         >
-          <h2 className="font-[family-name:var(--font-space-grotesk)] text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
+          <h2 className="font-[family-name:var(--font-orbitron)] text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
             Ready to Build with Us?
           </h2>
           <p className="text-lg text-muted max-w-2xl mx-auto mb-10 leading-relaxed">

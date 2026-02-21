@@ -1,17 +1,18 @@
 import type { Metadata } from "next";
-import { Inter, Space_Grotesk } from "next/font/google";
+import { Archivo, Orbitron } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { AppShell } from "@/components/layout/AppShell";
 
-const inter = Inter({
+const archivo = Archivo({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-archivo",
 });
 
-const spaceGrotesk = Space_Grotesk({
+const orbitron = Orbitron({
   subsets: ["latin"],
-  variable: "--font-space-grotesk",
+  variable: "--font-orbitron",
 });
 
 export const metadata: Metadata = {
@@ -43,6 +44,9 @@ export const metadata: Metadata = {
     description:
       "The Home for Solana Builders in Malaysia",
   },
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 export default function RootLayout({
@@ -51,11 +55,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
+    <html lang="en" className={`${archivo.variable} ${orbitron.variable}`}>
       <body className="min-h-screen">
-        <Navbar />
-        <main>{children}</main>
-        <Footer />
+        <AppShell>
+          <Navbar />
+          <main>{children}</main>
+          <Footer />
+        </AppShell>
       </body>
     </html>
   );
