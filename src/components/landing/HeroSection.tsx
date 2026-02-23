@@ -247,8 +247,14 @@ export function HeroSection() {
         {`!function(){var u=window.UnicornStudio;if(u&&u.init){if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",function(){u.init()})}else{u.init()}}else{window.UnicornStudio={isInitialized:!1};var i=document.createElement("script");i.src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v2.0.5/dist/unicornStudio.umd.js",i.onload=function(){if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",function(){UnicornStudio.init()})}else{UnicornStudio.init()}},(document.head||document.body).appendChild(i)}}();`}
       </Script>
 
-      {/* Dark overlay */}
-      <div className="absolute inset-0 bg-black/10 pointer-events-none" />
+      {/* Dark overlay - gradient from black 50% to transparent over bottom 30% */}
+      <div
+        className="absolute inset-0 pointer-events-none bg-size-[100%_30%] bg-bottom bg-no-repeat"
+        style={{
+          backgroundImage:
+            "linear-gradient(to top, rgba(0,0,0,0.5) 20%, transparent 100%)",
+        }}
+      />
 
       {/* Content */}
       <div className="relative z-10 flex flex-col h-screen px-8 md:px-16 py-10 ">
@@ -316,7 +322,7 @@ export function HeroSection() {
         <div className="flex-1 min-w-0 h-px bg-white/20" />
 
 
-          <p className="hidden md:block w-2xl text-center text-base text-white/80 leading-relaxed uppercase font-inter">
+          <p className="hidden md:block w-2xl text-center text-base text-white/80 leading-relaxed uppercase font-inter font-medium">
             We connect local talent with global opportunities. Build, earn, and grow alongside Malaysia&apos;s most ambitious web3 community.
           </p>
         <div className="flex-1 min-w-0 h-px bg-white/20" />
