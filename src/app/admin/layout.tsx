@@ -2,21 +2,31 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   Users,
   Calendar,
   Handshake,
-  BarChart3,
-  MessageSquare,
-  HelpCircle,
   FileText,
   LogOut,
   Menu,
   X,
   LayoutDashboard,
+  ArrowLeft,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 
 const sidebarLinks = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -48,8 +58,7 @@ export default function AdminLayout({
       const { data: { session } } = await supabase.auth.getSession();
       setIsAuthenticated(!!session);
     } catch {
-      // If Supabase isn't configured, allow access for demo
-      setIsAuthenticated(true);
+      setIsAuthenticated(false);
     }
     setIsLoading(false);
   }
@@ -62,10 +71,7 @@ export default function AdminLayout({
       if (error) throw error;
       setIsAuthenticated(true);
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "Login failed";
-      setError(errorMessage);
-      // For demo, allow access anyway
-      setIsAuthenticated(true);
+      setError(err instanceof Error ? err.message : "Login failed");
     }
   }
 
@@ -76,75 +82,89 @@ export default function AdminLayout({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="w-8 h-8 border-2 border-solana-purple border-t-transparent rounded-full animate-spin" />
+      <div className="dark min-h-screen flex items-center justify-center" style={{ backgroundColor: "#0D0E08" }}>
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background px-6">
-        <div className="w-full max-w-md p-8 rounded-2xl bg-surface border border-white/5">
-          <h1 className="font-[family-name:var(--font-orbitron)] text-2xl font-bold text-white mb-2">
-            Admin Login
-          </h1>
-          <p className="text-sm text-muted mb-8">
-            Sign in to manage Superteam Malaysia content
-          </p>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg bg-background border border-white/5 text-white placeholder-muted-dark focus:outline-none focus:border-solana-purple/30 text-sm"
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg bg-background border border-white/5 text-white placeholder-muted-dark focus:outline-none focus:border-solana-purple/30 text-sm"
-            />
-            {error && <p className="text-xs text-red-400">{error}</p>}
-            <button
-              type="submit"
-              className="w-full py-3 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-solana-purple to-solana-green hover:opacity-90 transition-opacity"
-            >
-              Sign In
-            </button>
-          </form>
-        </div>
+      <div className="dark min-h-screen flex items-center justify-center px-6" style={{ backgroundColor: "#0D0E08" }}>
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Admin Login</CardTitle>
+            <CardDescription>Sign in to manage Superteam Malaysia content</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="admin@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              {error && <p className="text-sm text-destructive">{error}</p>}
+              <Button type="submit" className="w-full">Sign In</Button>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background pt-20">
-      {/* Mobile sidebar toggle */}
+    <div className="dark min-h-screen" style={{ backgroundColor: "#0D0E08" }}>
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="fixed top-24 left-4 z-50 md:hidden p-2 rounded-lg bg-surface text-white"
+        className="fixed top-4 left-4 z-50 md:hidden p-2 rounded-lg bg-card border"
       >
         {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
       </button>
 
       <div className="flex">
-        {/* Sidebar */}
         <aside
-          className={`fixed md:sticky top-20 left-0 h-[calc(100vh-5rem)] w-64 bg-surface/50 border-r border-white/5 p-6 overflow-y-auto transition-transform z-40 ${
+          className={cn(
+            "fixed md:sticky top-0 left-0 h-screen w-64 bg-card border-r flex flex-col overflow-y-auto transition-transform z-40",
             sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-          }`}
+          )}
         >
-          <div className="mb-8">
-            <h2 className="text-sm font-semibold text-white uppercase tracking-wider">
-              Admin Panel
-            </h2>
-            <p className="text-xs text-muted-dark mt-1">Manage your content</p>
+          {/* Logo */}
+          <div className="pt-6 px-5">
+            <Link href="/" className="block">
+              <Image
+                src="/superteam.svg"
+                alt="Superteam Malaysia"
+                width={120}
+                height={24}
+                className="h-6 w-auto"
+              />
+            </Link>
           </div>
 
-          <nav className="space-y-1">
+          {/* Title */}
+          <div className="px-5 mt-6">
+            <h2 className="text-base font-semibold">Admin console</h2>
+          </div>
+
+          {/* Nav items */}
+          <nav className="flex-1 px-3 py-4 space-y-0.5">
             {sidebarLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
@@ -152,34 +172,40 @@ export default function AdminLayout({
                   key={link.href}
                   href={link.href}
                   onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-all ${
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                     isActive
-                      ? "bg-solana-purple/10 text-solana-purple font-medium"
-                      : "text-muted hover:text-white hover:bg-white/5"
-                  }`}
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  )}
                 >
-                  <link.icon className="w-4 h-4" />
+                  <link.icon className="w-4 h-4 shrink-0" />
                   {link.label}
                 </Link>
               );
             })}
           </nav>
 
-          <div className="mt-auto pt-8">
+          {/* Bottom section */}
+          <div className="p-5 pt-4 border-t border-border/50 space-y-1">
             <button
               onClick={handleLogout}
-              className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-muted hover:text-white hover:bg-white/5 transition-all w-full"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 w-full justify-start transition-colors"
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut className="w-4 h-4 shrink-0" />
               Sign Out
             </button>
+            <Link
+              href="/"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4 shrink-0" />
+              Back to site
+            </Link>
           </div>
         </aside>
 
-        {/* Main Content */}
-        <main className="flex-1 min-h-[calc(100vh-5rem)] p-6 md:p-8">
-          {children}
-        </main>
+        <main className="flex-1 min-h-screen p-6 md:p-8">{children}</main>
       </div>
     </div>
   );

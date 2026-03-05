@@ -2,6 +2,10 @@
 
 import { useState } from "react";
 import { Save, Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface ContentSection {
   key: string;
@@ -12,34 +16,10 @@ interface ContentSection {
 }
 
 const initialContent: ContentSection[] = [
-  {
-    key: "hero",
-    label: "Hero Section",
-    title: "Build the Future of Web3 in Malaysia",
-    subtitle: "The Home for Solana Builders in Malaysia",
-    description: "Superteam Malaysia connects builders, creators, and founders in the Solana ecosystem. Access grants, bounties, hackathons, and a global network of Web3 talent.",
-  },
-  {
-    key: "mission",
-    label: "Mission Section",
-    title: "Empowering Malaysia's Web3 Builders",
-    subtitle: "What We Do",
-    description: "We provide the tools, community, and opportunities to help you build on Solana",
-  },
-  {
-    key: "stats",
-    label: "Stats Section",
-    title: "Growing the Solana Ecosystem",
-    subtitle: "Our Impact",
-    description: "",
-  },
-  {
-    key: "cta",
-    label: "Call to Action",
-    title: "Ready to Build with Us?",
-    subtitle: "",
-    description: "Join Superteam Malaysia and be part of the fastest-growing Solana community in Southeast Asia.",
-  },
+  { key: "hero", label: "Hero Section", title: "Build the Future of Web3 in Malaysia", subtitle: "The Home for Solana Builders in Malaysia", description: "Superteam Malaysia connects builders, creators, and founders in the Solana ecosystem. Access grants, bounties, hackathons, and a global network of Web3 talent." },
+  { key: "mission", label: "Mission Section", title: "Empowering Malaysia's Web3 Builders", subtitle: "What We Do", description: "We provide the tools, community, and opportunities to help you build on Solana" },
+  { key: "stats", label: "Stats Section", title: "Growing the Solana Ecosystem", subtitle: "Our Impact", description: "" },
+  { key: "cta", label: "Call to Action", title: "Ready to Build with Us?", subtitle: "", description: "Join Superteam Malaysia and be part of the fastest-growing Solana community in Southeast Asia." },
 ];
 
 export default function AdminContentPage() {
@@ -51,7 +31,6 @@ export default function AdminContentPage() {
   }
 
   function handleSave(key: string) {
-    // In production, this would save to Supabase
     setSaved(key);
     setTimeout(() => setSaved(null), 2000);
   }
@@ -59,59 +38,37 @@ export default function AdminContentPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="font-[family-name:var(--font-orbitron)] text-2xl font-bold text-white">Site Content</h1>
-        <p className="text-sm text-muted mt-1">Edit landing page text content</p>
+        <h1 className="text-2xl font-bold">Site Content</h1>
+        <p className="text-sm text-muted-foreground mt-1">Edit landing page text content</p>
       </div>
 
       <div className="space-y-6">
         {content.map((section) => (
-          <div key={section.key} className="p-6 rounded-xl bg-surface/50 border border-white/5">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-semibold text-white">{section.label}</h3>
-              <button
-                onClick={() => handleSave(section.key)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all ${
-                  saved === section.key
-                    ? "bg-solana-green/10 text-solana-green"
-                    : "bg-white/5 text-muted hover:text-white hover:bg-white/10"
-                }`}
-              >
-                {saved === section.key ? <Check className="w-3 h-3" /> : <Save className="w-3 h-3" />}
+          <Card key={section.key}>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>{section.label}</CardTitle>
+              <Button variant={saved === section.key ? "secondary" : "outline"} size="sm" onClick={() => handleSave(section.key)} disabled={saved === section.key}>
+                {saved === section.key ? <Check className="w-3 h-3 mr-2" /> : <Save className="w-3 h-3 mr-2" />}
                 {saved === section.key ? "Saved!" : "Save"}
-              </button>
-            </div>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs text-muted-dark mb-1">Title</label>
-                <input
-                  type="text"
-                  value={section.title}
-                  onChange={(e) => handleUpdate(section.key, "title", e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-lg bg-background border border-white/5 text-white text-sm focus:outline-none focus:border-solana-purple/30"
-                />
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Title</Label>
+                <Input value={section.title} onChange={(e) => handleUpdate(section.key, "title", e.target.value)} />
               </div>
-              <div>
-                <label className="block text-xs text-muted-dark mb-1">Subtitle</label>
-                <input
-                  type="text"
-                  value={section.subtitle}
-                  onChange={(e) => handleUpdate(section.key, "subtitle", e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-lg bg-background border border-white/5 text-white text-sm focus:outline-none focus:border-solana-purple/30"
-                />
+              <div className="space-y-2">
+                <Label>Subtitle</Label>
+                <Input value={section.subtitle} onChange={(e) => handleUpdate(section.key, "subtitle", e.target.value)} />
               </div>
-              {section.description && (
-                <div>
-                  <label className="block text-xs text-muted-dark mb-1">Description</label>
-                  <textarea
-                    value={section.description}
-                    onChange={(e) => handleUpdate(section.key, "description", e.target.value)}
-                    rows={3}
-                    className="w-full px-4 py-2.5 rounded-lg bg-background border border-white/5 text-white text-sm focus:outline-none focus:border-solana-purple/30 resize-none"
-                  />
+              {section.description !== undefined && (
+                <div className="space-y-2">
+                  <Label>Description</Label>
+                  <textarea value={section.description} onChange={(e) => handleUpdate(section.key, "description", e.target.value)} rows={3} className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" />
                 </div>
               )}
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         ))}
       </div>
     </div>
