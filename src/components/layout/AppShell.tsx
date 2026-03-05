@@ -1,6 +1,7 @@
 "use client";
 
 import { LoadingProvider, useLoading } from "@/contexts/LoadingContext";
+import { HeroLogoRefProvider } from "@/contexts/HeroLogoRefContext";
 import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import { SmoothScroll } from "@/components/ui/SmoothScroll";
 
@@ -9,12 +10,12 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      {loading && <LoadingScreen onComplete={() => setLoading(false)} />}
+      <LoadingScreen onComplete={() => setLoading(false)} />
       <SmoothScroll enabled={!loading}>
         <div
           style={{
             opacity: loading ? 0 : 1,
-            transition: "opacity 0.3s ease-in",
+            transition: "opacity 0.3s ease-out",
             pointerEvents: loading ? "none" : "auto",
           }}
         >
@@ -28,7 +29,9 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <LoadingProvider>
-      <AppShellContent>{children}</AppShellContent>
+      <HeroLogoRefProvider>
+        <AppShellContent>{children}</AppShellContent>
+      </HeroLogoRefProvider>
     </LoadingProvider>
   );
 }

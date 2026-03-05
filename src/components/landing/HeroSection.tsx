@@ -4,8 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import Script from "next/script";
 import Image from "next/image";
 import Link from "next/link";
-import { useScramble } from "use-scramble";
+import { motion } from "framer-motion";
+import { useScrambleText } from "@/hooks/useScrambleText";
 import { useLoading } from "@/contexts/LoadingContext";
+import { useHeroLogoRef } from "@/contexts/HeroLogoRefContext";
 
 const heroNavLinks = [
   { href: "#about", label: "MISSIONS" },
@@ -28,18 +30,7 @@ function ScrambleLink({
 }) {
   const [started, setStarted] = useState(false);
   const canReplayRef = useRef(true);
-  const { ref, replay } = useScramble({
-    text,
-    speed: 0.5,
-    tick: 2,
-    step: 1,
-    scramble: 3,
-    seed: 2,
-    chance: 0.8,
-    overdrive: false,
-    overflow: false,
-    playOnMount: false,
-  });
+  const { display, replay } = useScrambleText(text);
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -70,7 +61,7 @@ function ScrambleLink({
       onMouseLeave={handleMouseLeave}
     >
       <span className="w-1 h-1 shrink-0 rounded-full bg-current opacity-0 transition-opacity duration-200 group-hover:opacity-100" aria-hidden />
-      <span ref={ref} className="pointer-events-none" />
+      <span className="pointer-events-none font-mono">{display}</span>
     </Link>
   );
 }
@@ -94,18 +85,7 @@ function CtaButton({
   external?: boolean;
 }) {
   const canReplayRef = useRef(true);
-  const { ref, replay } = useScramble({
-    text,
-    speed: 0.5,
-    tick: 2,
-    step: 1,
-    scramble: 3,
-    seed: 2,
-    chance: 0.8,
-    overdrive: false,
-    overflow: false,
-    playOnMount: true,
-  });
+  const { display, replay } = useScrambleText(text, { playOnMount: true });
 
   const handleMouseEnter = () => {
     if (canReplayRef.current) {
@@ -128,9 +108,10 @@ function CtaButton({
         aria-hidden
       />
       <span
-        ref={ref}
-        className="relative z-10 pointer-events-none transition-colors duration-300 group-hover:text-black"
-      />
+        className="relative z-10 pointer-events-none transition-colors duration-300 group-hover:text-black font-mono"
+      >
+        {display}
+      </span>
     </>
   );
 
@@ -181,7 +162,18 @@ function MalaysiaTime() {
 
 export function HeroSection() {
   const { loading } = useLoading();
+  const heroLogoRef = useHeroLogoRef();
   const backgroundRef = useRef<HTMLDivElement>(null);
+  const [textRevealed, setTextRevealed] = useState(false);
+
+  // Delay text reveal until after content fade-in so the effect is visible
+  useEffect(() => {
+    if (!loading) {
+      const t = setTimeout(() => setTextRevealed(true), 450);
+      return () => clearTimeout(t);
+    }
+    queueMicrotask(() => setTextRevealed(false));
+  }, [loading]);
 
   useEffect(() => {
     let ticking = false;
@@ -201,25 +193,6 @@ export function HeroSection() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  const { ref: headingRef, replay: replayHeading } = useScramble({
-    text: "THE HOME OF SOLANA\nBUILDERS IN MALAYSIA",
-    speed: 0.5,
-    tick: 2,
-    step: 2,
-    scramble: 3,
-    seed: 2,
-    chance: 0.8,
-    overdrive: false,
-    overflow: false,
-    playOnMount: false,
-  });
-
-  useEffect(() => {
-    if (!loading) {
-      replayHeading();
-    }
-  }, [loading, replayHeading]);
 
   return (
     <section
@@ -294,19 +267,45 @@ export function HeroSection() {
 
           {/* Center: Logo + Heading */}
           <div className="flex-1 flex flex-col items-center justify-center gap-4 relative">
-            <Image
-              src="/white-stmy-logo.png"
-              alt="Superteam Malaysia"
-              width={120}
-              height={120}
-              className="w-[120px] h-auto absolute -top-[100%] "
-              priority
-            />
+            <div
+              ref={heroLogoRef}
+              className="absolute -top-[100%] left-1/2 -translate-x-1/2 w-[120px] h-[120px] flex items-center justify-center"
+            >
+              <Image
+                src="/white-stmy-logo.png"
+                alt="Superteam Malaysia"
+                width={120}
+                height={120}
+                className="w-[120px] h-auto"
+                priority
+              />
+            </div>
             <h2
-              ref={headingRef}
-              className="h-[120px] font-[family-name:var(--font-orbitron)] font-black text-2xl md:text-4xl lg:text-5xl text-white leading-tight whitespace-pre-line text-center transition-opacity duration-300"
-              style={{ opacity: loading ? 0 : 1 }}
-            />
+              className="h-[120px] font-[family-name:var(--font-orbitron)] font-black text-2xl md:text-4xl xl:text-5xl text-white leading-tight text-center flex flex-col items-center justify-center gap-0"
+              aria-label="THE HOME OF SOLANA BUILDERS IN MALAYSIA"
+            >
+              {(["THE HOME OF SOLANA", "BUILDERS IN MALAYSIA"] as const).map((line, i) => (
+                <div key={i} className="overflow-hidden" style={{ lineHeight: 1.25 }}>
+                  <motion.span
+                    className="block text-center will-change-transform"
+                    style={{ lineHeight: 1.25 }}
+                    initial={{ y: 60 }}
+                    animate={
+                      textRevealed
+                        ? { y: 0 }
+                        : { y: 60 }
+                    }
+                    transition={{
+                      duration: 0.9,
+                      ease: [0.77, 0, 0.175, 1],
+                      delay: textRevealed ? i * 0.1 : 0,
+                    }}
+                  >
+                    {line}
+                  </motion.span>
+                </div>
+              ))}
+            </h2>
           </div>
 
           {/* Right: Malaysia time */}
@@ -322,7 +321,7 @@ export function HeroSection() {
         <div className="flex-1 min-w-0 h-px bg-white/20" />
 
 
-          <p className="hidden md:block w-2xl text-center text-base text-white/80 leading-relaxed uppercase font-inter font-medium">
+          <p className="hidden md:block w-lg xl:w-2xl text-center md:text-xs xl:text-base text-white/80 leading-relaxed uppercase font-inter font-medium">
             We connect local talent with global opportunities. Build, earn, and grow alongside Malaysia&apos;s most ambitious web3 community.
           </p>
         <div className="flex-1 min-w-0 h-px bg-white/20" />

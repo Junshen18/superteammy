@@ -1,10 +1,18 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useInView } from "react-intersection-observer";
-import { Calendar, MapPin, ArrowUpRight, Clock } from "lucide-react";
-import { SectionHeading } from "@/components/ui/SectionHeading";
-import { sampleEvents } from "@/lib/data";
+import { Calendar, ArrowUpRight } from "lucide-react";
+import { DomeGallery } from "@/components/ui/DomeGallery";
+import type { Event } from "@/lib/types";
+
+const TABS = [
+  { id: "past" as const, label: "Past" },
+  { id: "upcoming" as const, label: "Upcoming" },
+] as const;
+
+const EVENT_IMAGES = Array.from({ length: 32 }, (_, i) => `/images/events/${i + 1}.jpeg`);
 
 function formatDate(dateStr: string) {
   const date = new Date(dateStr);
@@ -15,105 +23,199 @@ function formatDate(dateStr: string) {
   });
 }
 
-function formatTime(dateStr: string) {
-  const date = new Date(dateStr);
-  return date.toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  });
+interface EventsSectionProps {
+  events: Event[];
 }
 
-export function EventsSection() {
+const PAST_EVENTS_PER_PAGE = 10;
+
+export function EventsSection({ events }: EventsSectionProps) {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
-  const upcomingEvents = sampleEvents.filter((e) => e.is_upcoming);
-  const pastEvents = sampleEvents.filter((e) => !e.is_upcoming);
+  const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming");
+  const [pastEventsToShow, setPastEventsToShow] = useState(PAST_EVENTS_PER_PAGE);
+  const pastEvents = events.filter((e) => !e.is_upcoming);
+  const displayedPastEvents = pastEvents.slice(0, pastEventsToShow);
+  const hasMorePastEvents = pastEventsToShow < pastEvents.length;
 
   return (
-    <section id="events" className="py-24 md:py-32 bg-[#0D0D20]">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <SectionHeading
-          label="Events"
-          title="Join Our Upcoming Events"
-          subtitle="Connect with the Malaysian Solana community at our meetups, hackathons, and workshops"
-          labelColor="green"
-        />
-
-        {/* Upcoming Events */}
-        <div ref={ref} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-16">
-          {upcomingEvents.map((event, index) => (
-            <motion.a
-              key={event.id}
-              href={event.luma_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              initial={{ opacity: 0, y: 30 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="group block p-6 rounded-2xl bg-surface/50 border border-white/5 hover:border-solana-green/20 transition-all duration-300 hover:bg-surface"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="px-3 py-1.5 rounded-lg bg-solana-green/10 text-solana-green text-xs font-semibold">
-                  Upcoming
-                </div>
-                <ArrowUpRight className="w-5 h-5 text-muted group-hover:text-solana-green transition-colors" />
-              </div>
-              <h3 className="text-lg font-semibold text-white mb-3 group-hover:text-solana-green transition-colors">
-                {event.title}
-              </h3>
-              <p className="text-sm text-muted mb-4 line-clamp-2">
-                {event.description}
-              </p>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm text-muted-dark">
-                  <Calendar className="w-4 h-4" />
-                  <span>{formatDate(event.date)}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-muted-dark">
-                  <Clock className="w-4 h-4" />
-                  <span>{formatTime(event.date)}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-muted-dark">
-                  <MapPin className="w-4 h-4" />
-                  <span>{event.location}</span>
-                </div>
-              </div>
-            </motion.a>
-          ))}
+    <section id="events" className="bg-[#0D0E08] overflow-x-hidden w-full">
+      {/* Dome Gallery - full screen with title overlay */}
+      <div
+        ref={ref}
+        className="relative w-screen left-1/2 -translate-x-1/2 h-screen min-h-[600px]"
+      >
+        <div className="absolute inset-0 w-full h-full">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={inView ? { opacity: 1 } : {}}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="w-full h-full"
+          >
+            <DomeGallery
+              images={EVENT_IMAGES}
+              segments={35}
+              maxVerticalRotationDeg={10}
+              fit={0.75}
+              fitBasis="width"
+              overlayBlurColor="#0D0E08"
+            />
+          </motion.div>
         </div>
 
-        {/* Past Events */}
-        {pastEvents.length > 0 && (
-          <div className="mt-12">
-            <h3 className="text-lg font-semibold text-muted mb-6">Past Events</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {pastEvents.map((event) => (
-                <a
-                  key={event.id}
-                  href={event.luma_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-4 p-4 rounded-xl bg-surface/30 border border-white/5 hover:border-white/10 transition-all group"
-                >
-                  <div className="w-12 h-12 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
-                    <Calendar className="w-5 h-5 text-muted-dark" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white truncate group-hover:text-solana-purple transition-colors">
-                      {event.title}
-                    </p>
-                    <p className="text-xs text-muted-dark">
-                      {formatDate(event.date)} &middot; {event.location}
-                    </p>
-                  </div>
-                </a>
-              ))}
-            </div>
+        {/* Title - absolute overlay on top */}
+        <div className="absolute inset-x-0 top-20 pt-12 md:pt-16 px-6 flex flex-col items-center z-10 pointer-events-none">
+        <div className="overflow-hidden" style={{ lineHeight: 1.25 }}>
+              <motion.span
+                className="block text-center will-change-transform"
+                style={{ lineHeight: 1.25 }}
+                initial={{ y: 60 }}
+                animate={inView ? { y: 0 } : { y: 60 }}
+                transition={{
+                  duration: 0.9,
+                  ease: [0.77, 0, 0.175, 1],
+                }}
+              >
+            <h2
+              className="font-[family-name:var(--font-orbitron)] text-3xl md:text-4xl lg:text-5xl xl:text-7xl font-black text-white uppercase"
+              style={{
+                textShadow: "0 0 2px rgba(255,255,255,0.8), 0 0 4px rgba(255,255,255,0.4)",
+                WebkitTextStroke: "1px rgba(255,255,255,0.3)",
+              }}
+            >
+              Our Events
+            </h2>
+            </motion.span>
           </div>
-        )}
+        </div>
+      </div>
 
-        {/* View All CTA */}
-        <div className="text-center mt-12">
+      {/* Tabs + Luma integration - below dome */}
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-16 ">
+        {/* Tab navigation - Luma-style lux-button-switcher with sliding pill */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="flex justify-center mb-4"
+        >
+          <div
+            className="relative grid grid-cols-2 min-w-[220px] rounded-xl bg-white/6 border border-white/10 p-1 shadow-lg"
+          >
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={`cursor-pointer relative flex items-center justify-center w-full px-6 py-2.5 rounded-lg text-sm font-semibold uppercase transition-colors duration-200 hover:text-white ${
+                  activeTab === tab.id ? "text-white" : "text-white/60"
+                }`}
+              >
+                {activeTab === tab.id && (
+                  <motion.div
+                    layoutId="events-tab-pill"
+                    className="absolute inset-0 rounded-lg bg-black/40 border border-white/10"
+                    transition={{
+                      type: "spring",
+                      stiffness: 400,
+                      damping: 30,
+                    }}
+                  />
+                )}
+                <span className="relative z-10 font-[family-name:var(--font-orbitron)]">{tab.label}</span>
+              </button>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Tab content with smooth crossfade */}
+        <AnimatePresence mode="wait">
+          {activeTab === "upcoming" && (
+            <motion.div
+              key="upcoming"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="flex justify-center mb-4 "
+            >
+              <div className="w-full max-w-[540px]">
+                <iframe
+                  src="https://lu.ma/embed/calendar/cal-sZfiZHfUS5piycU/events?lt=dark"
+                  width="540"
+                  height="800"
+                  frameBorder="0"
+                  allowFullScreen
+                  className="w-full min-h-[700px] rounded"
+                  style={{
+                    border: "1px solid rgba(191, 203, 218, 0.53)",
+                    borderRadius: "4px",
+                  }}
+                  title="Superteam Malaysia Events on Luma"
+                />
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === "past" && (
+            <motion.div
+              key="past"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="mb-12"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                {displayedPastEvents.map((event) => (
+                    <a
+                      key={event.id}
+                      href={event.luma_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-4 p-4 rounded-xl bg-surface/30 border border-white/5 hover:border-white/10 transition-all group overflow-hidden"
+                    >
+                      <div className="w-20 h-20 rounded-lg shrink-0 overflow-hidden bg-white/5">
+                        {event.image_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={event.image_url}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Calendar className="w-8 h-8 text-muted-dark" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-white truncate group-hover:text-solana-purple transition-colors">
+                          {event.title}
+                        </p>
+                        <p className="text-xs text-muted-dark">
+                          {formatDate(event.date)} &middot; {event.location}
+                        </p>
+                      </div>
+                    </a>
+                ))}
+              </div>
+              {hasMorePastEvents && (
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => setPastEventsToShow((n) => n + PAST_EVENTS_PER_PAGE)}
+                    className="px-6 py-2.5 rounded-lg text-sm font-semibold text-white/80 hover:text-white border border-white/20 hover:border-white/30 transition-all"
+                  >
+                    View more
+                  </button>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Luma CTA */}
+        <div className="text-center">
           <a
             href="https://lu.ma/superteammy"
             target="_blank"

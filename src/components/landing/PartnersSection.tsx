@@ -3,9 +3,13 @@
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { samplePartners } from "@/lib/data";
+import type { Partner } from "@/lib/types";
 
-export function PartnersSection() {
+interface PartnersSectionProps {
+  partners: Partner[];
+}
+
+export function PartnersSection({ partners }: PartnersSectionProps) {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.2 });
 
   return (
@@ -22,7 +26,7 @@ export function PartnersSection() {
           ref={ref}
           className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 mt-16"
         >
-          {samplePartners.map((partner, index) => (
+          {partners.map((partner, index) => (
             <motion.a
               key={partner.id}
               href={partner.website_url}

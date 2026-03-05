@@ -6,11 +6,15 @@ import { ArrowRight, Twitter, Trophy, Code2, Award } from "lucide-react";
 import Link from "next/link";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Badge } from "@/components/ui/Badge";
-import { sampleMembers } from "@/lib/data";
+import type { Member } from "@/lib/types";
 
-export function MembersSpotlight() {
+interface MembersSpotlightProps {
+  members: Member[];
+}
+
+export function MembersSpotlight({ members }: MembersSpotlightProps) {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
-  const featuredMembers = sampleMembers.filter((m) => m.is_featured).slice(0, 4);
+  const featuredMembers = members.slice(0, 4);
 
   return (
     <section className="py-24 md:py-32">

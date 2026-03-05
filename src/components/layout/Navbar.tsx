@@ -1,121 +1,365 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useScrambleText } from "@/hooks/useScrambleText";
 
 const navLinks = [
-  { href: "#about", label: "About" },
-  { href: "#events", label: "Events" },
-  { href: "/members", label: "Members" },
-  { href: "#community", label: "Community" },
+  { href: "#about", label: "MISSIONS" },
+  { href: "#impact", label: "IMPACTS" },
+  { href: "#events", label: "EVENTS" },
+  { href: "/members", label: "MEMBERS" },
+  { href: "#ecosystem", label: "ECOSYSTEMS" },
+  { href: "#community", label: "WALLOFLOVES" },
   { href: "#faq", label: "FAQ" },
 ];
 
-export function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [visible, setVisible] = useState(false);
+const socialLinks = [
+  { href: "https://www.instagram.com/superteammalaysia", label: "INSTAGRAM" },
+  { href: "https://x.com/SuperteamMY", label: "X" },
+  { href: "https://t.me/superteammy", label: "TELEGRAM" },
+  { href: "https://lu.ma/superteammy", label: "LUMA" },
+];
 
-  useEffect(() => {
-    const hero = document.getElementById("hero");
-    if (!hero) {
-      setVisible(true);
-      return;
+function NavButton({
+  text,
+  onClick,
+}: {
+  text: string;
+  onClick?: () => void;
+}) {
+  const canReplayRef = useRef(true);
+  const { display, replay } = useScrambleText(text, { playOnMount: true });
+
+  const handleMouseEnter = () => {
+    if (canReplayRef.current) {
+      canReplayRef.current = false;
+      replay();
     }
-    const observer = new IntersectionObserver(
-      ([entry]) => setVisible(!entry.isIntersecting),
-      { threshold: 0.1 }
-    );
-    observer.observe(hero);
-    return () => observer.disconnect();
-  }, []);
+  };
+
+  const handleMouseLeave = () => {
+    canReplayRef.current = true;
+  };
 
   return (
-    <nav
-      className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-white/5 transition-all duration-300"
-      style={{
-        opacity: visible ? 1 : 0,
-        pointerEvents: visible ? "auto" : "none",
-        transform: visible ? "translateY(0)" : "translateY(-100%)",
-      }}
+    <button
+      onClick={onClick}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      className="group relative shrink-0 w-[130px] min-w-[130px] rounded-sm text-center overflow-hidden border border-white/40 px-4 py-2 font-[family-name:var(--font-orbitron)] text-xs tracking-widest text-white font-medium uppercase transition-colors duration-300 hover:border-white cursor-pointer"
     >
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
-          {/* Logo */}
-          <Link href="/" className="flex items-center">
+      <span
+        className="absolute inset-0 z-0 origin-left scale-x-0 bg-white transition-transform duration-300 ease-out group-hover:scale-x-100"
+        aria-hidden
+      />
+      <span
+        className="relative z-10 pointer-events-none transition-colors duration-300 group-hover:text-black font-mono"
+      >
+        {display}
+      </span>
+    </button>
+  );
+}
+
+function NavCtaLink({
+  href,
+  text,
+  external,
+}: {
+  href: string;
+  text: string;
+  external?: boolean;
+}) {
+  const canReplayRef = useRef(true);
+  const { display, replay } = useScrambleText(text, { playOnMount: true });
+
+  const handleMouseEnter = () => {
+    if (canReplayRef.current) {
+      canReplayRef.current = false;
+      replay();
+    }
+  };
+
+  const handleMouseLeave = () => {
+    canReplayRef.current = true;
+  };
+
+  const baseClass =
+    "group relative shrink-0 w-[130px] min-w-[130px] rounded-sm text-center overflow-hidden border border-white/40 px-4 py-2 font-[family-name:var(--font-orbitron)] text-xs tracking-widest text-white font-medium uppercase transition-colors duration-300 hover:border-white";
+
+  const content = (
+    <>
+      <span
+        className="absolute inset-0 z-0 origin-left scale-x-0 bg-white transition-transform duration-300 ease-out group-hover:scale-x-100"
+        aria-hidden
+      />
+      <span
+        className="relative z-10 pointer-events-none transition-colors duration-300 group-hover:text-black font-mono"
+      >
+        {display}
+      </span>
+    </>
+  );
+
+  if (external) {
+    return (
+      <Link
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={baseClass}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <Link
+      href={href}
+      className={baseClass}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {content}
+    </Link>
+  );
+}
+
+function MenuScrambleLink({
+  href,
+  text,
+  onClick,
+  index,
+}: {
+  href: string;
+  text: string;
+  onClick: () => void;
+  index: number;
+}) {
+  const canReplayRef = useRef(true);
+  const { display, replay } = useScrambleText(text, { playOnMount: true });
+
+  const handleMouseEnter = () => {
+    if (canReplayRef.current) {
+      canReplayRef.current = false;
+      replay();
+    }
+  };
+
+  const handleMouseLeave = () => {
+    canReplayRef.current = true;
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.2 + index * 0.06, duration: 0.4, ease: "easeOut" }}
+    >
+      <Link
+        href={href}
+        onClick={onClick}
+        className="group flex items-center justify-center gap-2 w-[320px] font-[family-name:var(--font-orbitron)] text-xl md:text-3xl font-bold tracking-wider text-white/80 uppercase transition-colors duration-300 hover:text-solana-green"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        <span className="w-1.5 h-1.5 shrink-0 rounded-full bg-current opacity-0 transition-opacity duration-200 group-hover:opacity-100" aria-hidden />
+        <span className="pointer-events-none font-mono">{display}</span>
+      </Link>
+    </motion.div>
+  );
+}
+
+function SocialLink({
+  href,
+  text,
+  index,
+}: {
+  href: string;
+  text: string;
+  index: number;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.5 + index * 0.06, duration: 0.3, ease: "easeOut" }}
+    >
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="font-[family-name:var(--font-orbitron)] text-xs tracking-widest text-white/50 uppercase transition-colors duration-300 hover:text-solana-green"
+      >
+        {text}
+      </a>
+    </motion.div>
+  );
+}
+
+const SCROLL_UP_THRESHOLD = 150;
+
+export function Navbar() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const [pastHero, setPastHero] = useState(false);
+  const lastScrollY = useRef(0);
+  const scrollUpAccum = useRef(0);
+
+  const handleScroll = useCallback(() => {
+    const currentY = window.scrollY;
+    const hero = document.getElementById("hero");
+    const heroBottom = hero ? hero.offsetTop + hero.offsetHeight : window.innerHeight;
+
+    const isPastHero = currentY > heroBottom - 100;
+    setPastHero(isPastHero);
+
+    if (!isPastHero) {
+      setVisible(false);
+      lastScrollY.current = currentY;
+      scrollUpAccum.current = 0;
+      return;
+    }
+
+    const delta = currentY - lastScrollY.current;
+
+    if (delta > 0) {
+      // Scrolling down
+      scrollUpAccum.current = 0;
+      setVisible(false);
+    } else {
+      // Scrolling up
+      scrollUpAccum.current += Math.abs(delta);
+      if (scrollUpAccum.current >= SCROLL_UP_THRESHOLD) {
+        setVisible(true);
+      }
+    }
+
+    lastScrollY.current = currentY;
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
+
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [menuOpen]);
+
+  const showBar = (visible && pastHero) || menuOpen;
+
+  return (
+    <>
+      {/* Floating Navbar */}
+      <nav
+        className="fixed top-0 left-0 right-0 z-[100] pointer-events-none"
+        style={{ padding: "12px 16px" }}
+      >
+        <div
+          className="mx-auto flex items-center justify-between rounded-sm bg-background/80 backdrop-blur-xl px-4 py-2.5 pointer-events-auto transition-all duration-500 ease-out"
+          style={{
+            maxWidth: 1280,
+            opacity: showBar ? 1 : 0,
+            transform: showBar ? "translateY(0)" : "translateY(-20px)",
+          }}
+        >
+          {/* Left: Connect */}
+          <NavCtaLink
+            href="https://t.me/superteammy"
+            text="CONNECT"
+            external
+          />
+
+          {/* Center: Logo */}
+          <Link href="/" className="flex items-center justify-center">
             <Image
               src="/superteam.svg"
               alt="Superteam Malaysia"
-              width={154}
-              height={18}
-              className="h-5 w-auto"
+              width={140}
+              height={16}
+              className="h-4 w-auto"
               priority
             />
           </Link>
 
-          {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-sm text-muted hover:text-white transition-colors duration-200"
-              >
-                {link.label}
-              </Link>
-            ))}
-            <Link
-              href="https://t.me/superteammy"
-              target="_blank"
-              className="px-6 py-2.5 rounded-lg text-sm font-semibold text-white bg-linear-to-r from-solana-purple to-solana-green hover:opacity-90 transition-opacity"
-            >
-              Join Community
-            </Link>
-          </div>
-
-          {/* Mobile Menu Toggle */}
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden text-white p-2"
-          >
-            {isOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          {/* Right: Menu */}
+          <NavButton
+            text={menuOpen ? "CLOSE" : "MENU"}
+            onClick={() => setMenuOpen((v) => !v)}
+          />
         </div>
-      </div>
+      </nav>
 
-      {/* Mobile Menu */}
+      {/* Fullscreen Menu Overlay */}
       <AnimatePresence>
-        {isOpen && (
+        {menuOpen && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-background/95 backdrop-blur-xl border-b border-white/5"
+            className="fixed inset-0 z-[99] flex flex-col bg-background"
+            initial={{ clipPath: "circle(0% at calc(100% - 90px) 32px)" }}
+            animate={{ clipPath: "circle(150% at calc(100% - 90px) 32px)" }}
+            exit={{ clipPath: "circle(0% at calc(100% - 90px) 32px)" }}
+            transition={{ duration: 0.6, ease: [0.76, 0, 0.24, 1] }}
           >
-            <div className="px-6 py-6 space-y-4">
-              {navLinks.map((link) => (
-                <Link
+            {/* Top spacer for the navbar */}
+            <div className="h-20" />
+
+            {/* Logo */}
+            <motion.div
+              className="flex justify-center pt-6 pb-8"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3, duration: 0.4 }}
+            >
+              <Image
+                src="/white-stmy-logo.png"
+                alt="Superteam Malaysia"
+                width={80}
+                height={80}
+                className="w-[80px] h-auto"
+              />
+            </motion.div>
+
+            {/* Nav Links */}
+            <div className="flex-1 flex flex-col items-center justify-center gap-5 md:gap-7">
+              {navLinks.map((link, i) => (
+                <MenuScrambleLink
                   key={link.href}
                   href={link.href}
-                  onClick={() => setIsOpen(false)}
-                  className="block text-lg text-muted hover:text-white transition-colors"
-                >
-                  {link.label}
-                </Link>
+                  text={link.label}
+                  onClick={() => setMenuOpen(false)}
+                  index={i}
+                />
               ))}
-              <Link
-                href="https://t.me/superteammy"
-                target="_blank"
-                className="block w-full text-center px-6 py-3 rounded-lg text-sm font-semibold text-white bg-linear-to-r from-solana-purple to-solana-green"
-              >
-                Join Community
-              </Link>
+            </div>
+
+            {/* Socials */}
+            <div className="flex items-center justify-center gap-6 md:gap-10 pb-10 pt-6">
+              {socialLinks.map((link, i) => (
+                <SocialLink
+                  key={link.href}
+                  href={link.href}
+                  text={link.label}
+                  index={i}
+                />
+              ))}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </nav>
+    </>
   );
 }

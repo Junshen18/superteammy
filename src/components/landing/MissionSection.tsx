@@ -1,83 +1,271 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
-import { useInView } from "react-intersection-observer";
-import {
-  Code2,
-  Calendar,
-  Coins,
-  Briefcase,
-  GraduationCap,
-  Globe,
-} from "lucide-react";
-import { SectionHeading } from "@/components/ui/SectionHeading";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+gsap.registerPlugin(ScrollTrigger);
 
 const pillars = [
   {
-    icon: Code2,
-    title: "Builder Support",
-    description: "Mentorship and resources for Solana developers at every level",
+    title: "LEARN",
+    image: "/images/learn.jpeg",
+    description:
+      "Learn through hands-on education, workshops, and mentorship from experienced builders across the ecosystem.",
   },
   {
-    icon: Calendar,
-    title: "Events & Hackathons",
-    description: "Regular meetups, hackathons, and workshops across Malaysia",
+    title: "BUILD",
+    image: "/images/build.jpeg",
+    description:
+      "Build alongside the community through hackathons, collaborative events, and real projects that turn ideas into production-ready products.",
   },
   {
-    icon: Coins,
-    title: "Grants & Funding",
-    description: "Access to Solana grants and funding for your projects",
+    title: "GROW",
+    image: "/images/grow.jpeg",
+    description:
+      "Grow your career and network through strong ecosystem connections and long-term opportunities, locally and globally.",
   },
   {
-    icon: Briefcase,
-    title: "Jobs & Bounties",
-    description: "Earn opportunities in the Solana ecosystem",
-  },
-  {
-    icon: GraduationCap,
-    title: "Education",
-    description: "Workshops and learning programs for all skill levels",
-  },
-  {
-    icon: Globe,
-    title: "Global Network",
-    description: "Connect with Superteam chapters worldwide",
+    title: "EARN",
+    image: "/images/earn.jpeg",
+    description:
+      "Earn through grants, funding access, jobs, and bounties by contributing to impactful Web3 projects.",
   },
 ];
 
+const COLLAPSED_WIDTH = 200;
+const EXPANDED_MIN_WIDTH = 420;
+
 export function MissionSection() {
-  const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
+  const sectionRef = useRef<HTMLElement>(null);
+  const headingRef = useRef<HTMLDivElement>(null);
+  const pillarsContainerRef = useRef<HTMLDivElement>(null);
+  const pillarRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const descRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const labelRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [titleRevealed, setTitleRevealed] = useState(false);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    const container = pillarsContainerRef.current;
+    const pillarsEl = pillarRefs.current.filter(Boolean);
+    const descEl = descRefs.current.filter(Boolean);
+    const labelEl = labelRefs.current.filter(Boolean);
+
+    if (!section || !container || pillarsEl.length === 0) return;
+
+    let handleWheel: (e: WheelEvent) => void;
+
+    const ctx = gsap.context(() => {
+      // Set initial state: visible, collapsed
+      pillarsEl.forEach((el) => {
+        gsap.set(el, { width: COLLAPSED_WIDTH, minWidth: COLLAPSED_WIDTH });
+      });
+      descEl.forEach((el) => {
+        gsap.set(el, { width: 0, minWidth: 0, flex: "0 0 0", overflow: "hidden", opacity: 0 });
+      });
+      labelEl.forEach((el) => {
+        gsap.set(el, { left: "50%", xPercent: -50 });
+      });
+
+      let step = 0;
+      let scrollAccum = 0;
+      const SCROLL_THRESHOLD = 160;
+
+      const applyStep = (newStep: number) => {
+        const expandDuration = 0.4;
+        const collapseDuration = 0.3;
+
+        pillarsEl.forEach((el, i) => {
+          const shouldExpand = i === newStep - 1;
+          gsap.to(el, {
+            width: shouldExpand ? "auto" : COLLAPSED_WIDTH,
+            minWidth: shouldExpand ? EXPANDED_MIN_WIDTH : COLLAPSED_WIDTH,
+            flex: shouldExpand ? "1 1 420px" : `0 0 ${COLLAPSED_WIDTH}px`,
+            duration: shouldExpand ? expandDuration : collapseDuration,
+            ease: "power2.out",
+          });
+          if (descEl[i]) {
+            gsap.to(descEl[i], {
+              width: shouldExpand ? "auto" : 0,
+              minWidth: 0,
+              flex: shouldExpand ? "1 1 0" : "0 0 0",
+              overflow: shouldExpand ? "visible" : "hidden",
+              opacity: shouldExpand ? 1 : 0,
+              duration: shouldExpand ? expandDuration : collapseDuration,
+              ease: "power2.out",
+            });
+          }
+            if (labelEl[i]) {
+            gsap.to(labelEl[i], {
+              left: shouldExpand ? 32 : "50%",
+              xPercent: shouldExpand ? 0 : -50,
+              duration: shouldExpand ? expandDuration : collapseDuration,
+              ease: "power2.out",
+            });
+          }
+        });
+      };
+
+      const st = ScrollTrigger.create({
+        trigger: section,
+        start: "top top",
+        end: "+=80%",
+        pin: true,
+        scrub: false,
+      });
+
+      handleWheel = (e: WheelEvent) => {
+        if (!st.isActive) return;
+
+        scrollAccum += e.deltaY;
+        if (scrollAccum > SCROLL_THRESHOLD) {
+          scrollAccum = 0;
+          step = Math.min(5, step + 1);
+          if (step <= 4) {
+            e.preventDefault();
+            applyStep(step);
+          }
+          // step === 5: allow scroll through (don't preventDefault)
+        } else if (scrollAccum < -SCROLL_THRESHOLD) {
+          scrollAccum = 0;
+          step = Math.max(0, step - 1);
+          e.preventDefault();
+          applyStep(step);
+        } else {
+          // Small scroll: only prevent when we're controlling pillars (step < 5)
+          if (step < 5) e.preventDefault();
+        }
+      };
+
+      window.addEventListener("wheel", handleWheel, { passive: false });
+    }, section);
+
+    return () => {
+      window.removeEventListener("wheel", handleWheel);
+      ctx.revert();
+    };
+  }, []);
+
+  // Trigger title scramble when section enters view
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const st = ScrollTrigger.create({
+      trigger: section,
+      start: "top 85%",
+      onEnter: () => setTitleRevealed(true),
+      once: true,
+    });
+
+    return () => st.kill();
+  }, []);
 
   return (
-    <section id="about" className="py-24 md:py-32 bg-[#0D0D20]">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <SectionHeading
-          label="What We Do"
-          title="Empowering Malaysia's Web3 Builders"
-          subtitle="We provide the tools, community, and opportunities to help you build on Solana"
+    <section
+      id="about"
+      ref={sectionRef}
+      className="relative min-h-screen flex flex-col justify-center overflow-visible"
+    >
+      {/* Background - Next.js Image auto-serves WebP when supported */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="/images/mission-bg1.png"
+          alt=""
+          fill
+          className="object-cover object-center"
+          unoptimized
+          priority={false}
         />
-
-        <div ref={ref} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-16">
-          {pillars.map((pillar, index) => (
-            <motion.div
-              key={pillar.title}
-              initial={{ opacity: 0, y: 30 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="group p-8 rounded-2xl bg-surface/50 border border-white/5 hover:border-solana-purple/20 transition-all duration-300 hover:bg-surface"
-            >
-              <div className="w-12 h-12 rounded-xl bg-solana-green/10 flex items-center justify-center mb-5 group-hover:bg-solana-green/15 transition-colors">
-                <pillar.icon className="w-6 h-6 text-solana-green" />
-              </div>
-              <h3 className="text-lg font-semibold text-white mb-2">
-                {pillar.title}
-              </h3>
-              <p className="text-sm text-muted leading-relaxed">
-                {pillar.description}
-              </p>
-            </motion.div>
+      </div>
+      {/* Centered heading */}
+      <div
+        ref={headingRef}
+        className="relative z-10 text-center px-6 py-10 mt-6"
+      >
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white mb-2">
+          Our Mission
+        </p>
+        <h2 className="font-[family-name:var(--font-orbitron)] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black text-white leading-tight max-w-5xl mx-auto flex flex-col items-center justify-center gap-0">
+          {(["Empowering Malaysia's", "Solana Builders"] as const).map((line, i) => (
+            <div key={i} className="overflow-hidden" style={{ lineHeight: 1.25 }}>
+              <motion.span
+                className="block text-center will-change-transform"
+                style={{ lineHeight: 1.25 }}
+                initial={{ y: 60 }}
+                animate={titleRevealed ? { y: 0 } : { y: 60 }}
+                transition={{
+                  duration: 0.9,
+                  ease: [0.77, 0, 0.175, 1],
+                  delay: titleRevealed ? i * 0.1 : 0,
+                }}
+              >
+                {line}
+              </motion.span>
+            </div>
           ))}
-        </div>
+        </h2>
+      </div>
+
+      {/* 4 pillars - horizontal row, centered */}
+      <div
+        ref={pillarsContainerRef}
+        className="relative z-10 flex w-full overflow-visible justify-center items-center gap-12 min-h-[550px] px-6 md:px-10"
+      >
+        {pillars.map((pillar, i) => (
+          <div
+            key={pillar.title}
+            ref={(el) => {
+              pillarRefs.current[i] = el;
+            }}
+            className="relative w-[200px] min-w-[200px] h-[600px] overflow-hidden rounded-xl"
+          >
+            {/* Image */}
+            <div className="absolute inset-0">
+              <Image
+                src={pillar.image}
+                alt={pillar.title}
+                fill
+                className="object-cover object-center"
+                sizes="(max-width: 768px) 25vw, 420px"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+            </div>
+
+            {/* Title + content in flex-row */}
+            <div className="absolute inset-0 flex flex-row items-stretch z-10">
+              {/* Title (rotated 90°) - centered in pillar when collapsed */}
+              <div
+                ref={(el) => {
+                  labelRefs.current[i] = el;
+                }}
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center shrink-0 min-h-[600px] w-fit"
+              >
+                <span
+                  className="font-[family-name:var(--font-orbitron)] font-bold text-white drop-shadow-lg origin-center whitespace-nowrap"
+                  style={{ writingMode: "vertical-rl", fontSize: 120, transform: "rotate(180deg)" }}
+                >
+                  {pillar.title}
+                </span>
+              </div>
+
+              {/* Description - only displays when pillar expands */}
+              <div
+                ref={(el) => {
+                  descRefs.current[i] = el;
+                }}
+                className="flex items-end p-12 pl-52 overflow-hidden"
+                style={{ flex: "0 0 0", width: 0, minWidth: 0, opacity: 0 }}
+              >
+                <p className="text-xl md:text-2xl lg:text-3xl text-white/90 leading-relaxed">
+                  {pillar.description}
+                </p>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </section>
   );

@@ -4,9 +4,13 @@ import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { Twitter, Quote } from "lucide-react";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { sampleTestimonials } from "@/lib/data";
+import type { Testimonial } from "@/lib/types";
 
-export function WallOfLove() {
+interface WallOfLoveProps {
+  testimonials: Testimonial[];
+}
+
+export function WallOfLove({ testimonials }: WallOfLoveProps) {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
 
   return (
@@ -19,7 +23,7 @@ export function WallOfLove() {
         />
 
         <div ref={ref} className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
-          {sampleTestimonials.map((testimonial, index) => (
+          {testimonials.map((testimonial, index) => (
             <motion.a
               key={testimonial.id}
               href={testimonial.tweet_url}
