@@ -92,7 +92,7 @@ Edit `.env.local` with your values:
 ```env
 # Supabase Configuration
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=sb_publishable_your-key-here
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
 # Luma API (optional)
