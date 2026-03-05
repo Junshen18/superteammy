@@ -22,6 +22,7 @@ export interface Member {
 
 export interface Event {
   id: string;
+  luma_event_id?: string;
   title: string;
   description: string;
   date: string;
@@ -30,6 +31,7 @@ export interface Event {
   luma_url: string;
   image_url: string;
   is_upcoming: boolean;
+  is_archived?: boolean;
   created_at: string;
 }
 
