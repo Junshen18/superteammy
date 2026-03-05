@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS members (
 -- Events table
 CREATE TABLE IF NOT EXISTS events (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  luma_event_id TEXT UNIQUE,
   title TEXT NOT NULL,
   description TEXT DEFAULT '',
   date TIMESTAMPTZ NOT NULL,
