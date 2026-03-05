@@ -1,35 +1,45 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { useScramble } from "use-scramble";
-import { SuperteamLogo } from "./SuperteamLogo";
+import { useScrambleText } from "@/hooks/useScrambleText";
+import { useHeroLogoRef } from "@/contexts/HeroLogoRefContext";
 
-const LOGO_ANIM_MS = 1400;
-const SCRAMBLE_DURATION_MS = 1200;
-const HOLD_AFTER_MS = 800;
+// Video sources: WebM (smallest) → MP4 (universal) → MOV (fallback before running optimize script)
+const LOADING_VIDEO_SOURCES = [
+  { src: "/videos/loading.webm", type: "video/webm" },
+  { src: "/videos/loading.mp4", type: "video/mp4" },
+  { src: "/videos/0302.mov", type: "video/quicktime" },
+];
+
+const LOGO_ANIM_MS = 700;
+const SCRAMBLE_DURATION_MS = 700;
+const HOLD_AFTER_MS = 400;
+const ZOOM_DURATION_MS = 800;
 const BAR_DURATION_S =
   (LOGO_ANIM_MS + SCRAMBLE_DURATION_MS + HOLD_AFTER_MS) / 1000;
 
-export function LoadingScreen({ onComplete }: { onComplete: () => void }) {
-  const [phase, setPhase] = useState<"logo" | "scramble" | "hold" | "exit">(
-    "logo"
-  );
-  const scrambleStarted = useRef(false);
+const LOADING_LOGO_W = 80;
+const LOADING_LOGO_H = 62;
+const HERO_LOGO_SIZE = 120;
 
-  const { ref: scrambleRef, replay } = useScramble({
-    text: "SUPERTEAM\nMALAYSIA",
-    speed: 0.5,
-    tick: 2,
-    step: 1,
-    scramble: 3,
-    seed: 2,
-    chance: 0.8,
-    overdrive: false,
-    overflow: false,
-    playOnMount: false,
-  });
+export function LoadingScreen({ onComplete }: { onComplete: () => void }) {
+  const [phase, setPhase] = useState<
+    "logo" | "scramble" | "hold" | "zoom" | "exit"
+  >("logo");
+  const scrambleStarted = useRef(false);
+  const heroLogoRef = useHeroLogoRef();
+  const [targetPosition, setTargetPosition] = useState<{
+    x: number;
+    y: number;
+    scale: number;
+  } | null>(null);
+
+  const { display: scrambleDisplay, replay } = useScrambleText(
+    "SUPERTEAM\nMALAYSIA",
+    { iterationsPerLetter: 1 }
+  );
 
   // Phase 1 → 2: logo finishes, start scramble
   useEffect(() => {
@@ -52,70 +62,147 @@ export function LoadingScreen({ onComplete }: { onComplete: () => void }) {
     return () => clearTimeout(t);
   }, [phase]);
 
-  // Phase 3 → 4: hold ends, start exit
+  // Phase 3 → 4: hold ends, start zoom — capture hero logo position
   useEffect(() => {
     if (phase !== "hold") return;
-    const t = setTimeout(() => setPhase("exit"), HOLD_AFTER_MS);
+    const t = setTimeout(() => {
+      const el = heroLogoRef.current;
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        const vw = window.innerWidth / 2;
+        const vh = window.innerHeight / 2;
+        const heroCenterX = rect.left + rect.width / 2;
+        const heroCenterY = rect.top + rect.height / 2;
+        setTargetPosition({
+          x: heroCenterX - vw,
+          y: heroCenterY - vh,
+          scale: HERO_LOGO_SIZE / LOADING_LOGO_W,
+        });
+      } else {
+        setTargetPosition({ x: 0, y: 0, scale: 1 });
+      }
+      setPhase("zoom");
+    }, HOLD_AFTER_MS);
     return () => clearTimeout(t);
-  }, [phase]);
+  }, [phase, heroLogoRef]);
 
-  const handleExitComplete = useCallback(() => {
-    onComplete();
-  }, [onComplete]);
+  // Phase 4 → 5: zoom completes, start exit — trigger hero fade-in as logo lands
+  useEffect(() => {
+    if (phase !== "zoom") return;
+    const t = setTimeout(() => {
+      onComplete(); // Hero starts fading in while loading fades out
+      setPhase("exit");
+    }, ZOOM_DURATION_MS);
+    return () => clearTimeout(t);
+  }, [phase, onComplete]);
 
   const showText = phase !== "logo";
+  const isZooming = phase === "zoom";
 
   return (
-    <AnimatePresence onExitComplete={handleExitComplete}>
-      {phase !== "exit" && (
+    <AnimatePresence>
+      {phase !== "exit" ? (
         <motion.div
           key="loading-screen"
-          className="fixed inset-0 z-50 flex items-center justify-center"
+          className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden"
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.6, ease: "easeInOut" }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
         >
-          <Image
-            src="/images/loading-img.png"
-            alt=""
-            fill
-            className="object-cover"
-            priority
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+            poster="/images/loading-poster.jpg"
+            preload="auto"
+          >
+            {LOADING_VIDEO_SOURCES.map(({ src, type }) => (
+              <source key={type} src={src} type={type} />
+            ))}
+          </video>
+          <motion.div
+            className="absolute inset-0 bg-black/20"
+            animate={{ opacity: isZooming ? 0 : 1 }}
+            transition={{ duration: 0.4 }}
           />
-          <div className="absolute inset-0 bg-black/30" />
 
-          <div className="relative flex flex-col items-center gap-4">
+          <div className="relative flex flex-col items-center justify-center gap-4">
+            {isZooming ? (
+              <div
+                className="fixed left-1/2 top-1/2 z-[60] -translate-x-1/2 -translate-y-1/2"
+                style={{ pointerEvents: "none" }}
+              >
+                <motion.div
+                  className="flex items-center justify-center"
+                  initial={{ opacity: 1, scale: 1, x: 0, y: 0 }}
+                  animate={{
+                    scale: targetPosition?.scale ?? 1,
+                    x: targetPosition?.x ?? 0,
+                    y: targetPosition?.y ?? 0,
+                  }}
+                  transition={{
+                    duration: ZOOM_DURATION_MS / 1000,
+                    ease: [0.25, 0.46, 0.45, 0.94],
+                  }}
+                >
+                  <Image
+                    src="/white-stmy-logo.png"
+                    alt="Superteam Malaysia"
+                    width={LOADING_LOGO_W}
+                    height={LOADING_LOGO_H}
+                    className="w-[80px] h-auto"
+                    priority
+                  />
+                </motion.div>
+              </div>
+            ) : null}
             <motion.div
+              className="flex items-center justify-center"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+              style={{ visibility: isZooming ? "hidden" : "visible" }}
             >
-              <SuperteamLogo
-                className="w-[80px] h-[62px]"
-                animated={true}
-                color="white"
+              <Image
+                src="/white-stmy-logo.png"
+                alt="Superteam Malaysia"
+                width={LOADING_LOGO_W}
+                height={LOADING_LOGO_H}
+                className="w-[80px] h-auto"
+                priority
               />
             </motion.div>
 
-            <div className="h-12 flex items-center justify-center">
+            <motion.div
+              className="h-12 flex items-center justify-center"
+              animate={{ opacity: isZooming ? 0 : 1 }}
+              transition={{ duration: 0.2 }}
+            >
               <p
-                ref={scrambleRef}
                 className="font-[family-name:var(--font-orbitron)] font-bold text-lg text-white/90 text-center whitespace-pre-line transition-opacity duration-300"
                 style={{ opacity: showText ? 1 : 0 }}
-              />
-            </div>
+              >
+                {scrambleDisplay}
+              </p>
+            </motion.div>
           </div>
 
-          {/* Loading bar — fills over the total duration, completes before exit */}
-          <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-white/10">
+          {/* Loading bar — fills over the total duration, completes before zoom */}
+          <motion.div
+            className="absolute bottom-0 left-0 right-0 h-[3px] bg-white/10"
+            animate={{ opacity: isZooming ? 0 : 1 }}
+            transition={{ duration: 0.2 }}
+          >
             <motion.div
               className="h-full bg-linear-to-r from-solana-purple to-solana-green"
               initial={{ width: "0%" }}
               animate={{ width: "100%" }}
               transition={{ duration: BAR_DURATION_S, ease: "easeInOut" }}
             />
-          </div>
+          </motion.div>
         </motion.div>
-      )}
+      ) : null}
     </AnimatePresence>
   );
 }
