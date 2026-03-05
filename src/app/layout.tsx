@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 import { Archivo, Orbitron } from "next/font/google";
 import "./globals.css";
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
-import { AppShell } from "@/components/layout/AppShell";
 
 const archivo = Archivo({
   subsets: ["latin"],
@@ -56,13 +53,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${archivo.variable} ${orbitron.variable}`}>
-      <body className="min-h-screen">
-        <AppShell>
-          <Navbar />
-          <main>{children}</main>
-          <Footer />
-        </AppShell>
-      </body>
+      <body className="min-h-screen">{children}</body>
     </html>
   );
 }

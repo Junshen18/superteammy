@@ -4,22 +4,24 @@ import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { MemberCard } from "@/components/members/MemberCard";
 import { MemberFilters } from "@/components/members/MemberFilters";
-import { sampleMembers } from "@/lib/data";
+import type { Member } from "@/lib/types";
 
-export default function MembersPage() {
+interface MembersPageClientProps {
+  members: Member[];
+}
+
+export function MembersPageClient({ members }: MembersPageClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
 
   const filteredMembers = useMemo(() => {
-    return sampleMembers.filter((member) => {
-      // Search filter
+    return members.filter((member) => {
       const matchesSearch =
         searchQuery === "" ||
         member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         member.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
         member.role.toLowerCase().includes(searchQuery.toLowerCase());
 
-      // Skill filter
       const matchesFilter =
         activeFilter === "All" ||
         (activeFilter === "Core Team" && member.is_core_team) ||
@@ -27,12 +29,11 @@ export default function MembersPage() {
 
       return matchesSearch && matchesFilter;
     });
-  }, [searchQuery, activeFilter]);
+  }, [members, searchQuery, activeFilter]);
 
   return (
     <div className="min-h-screen pt-28 pb-24">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        {/* Page Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -51,7 +52,6 @@ export default function MembersPage() {
           </p>
         </motion.div>
 
-        {/* Filters */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -66,7 +66,6 @@ export default function MembersPage() {
           />
         </motion.div>
 
-        {/* Results count */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -76,7 +75,6 @@ export default function MembersPage() {
           Showing {filteredMembers.length} member{filteredMembers.length !== 1 ? "s" : ""}
         </motion.p>
 
-        {/* Members Grid */}
         {filteredMembers.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredMembers.map((member, index) => (
