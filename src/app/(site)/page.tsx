@@ -7,22 +7,21 @@ import { MembersSpotlight } from "@/components/landing/MembersSpotlight";
 import { PartnersSection } from "@/components/landing/PartnersSection";
 import { WallOfLove } from "@/components/landing/WallOfLove";
 import { FAQSection } from "@/components/landing/FAQSection";
-import { JoinCTA } from "@/components/landing/JoinCTA";
 import {
   getStats,
   getEvents,
-  getFeaturedMembers,
+  getFeaturedProfiles,
   getPartners,
   getTestimonials,
   getFAQs,
 } from "@/lib/supabase/queries";
 
 export default async function Home() {
-  const [stats, events, members, partners, testimonials, faqs] =
+  const [stats, events, profiles, partners, testimonials, faqs] =
     await Promise.all([
       getStats(),
       getEvents(),
-      getFeaturedMembers(),
+      getFeaturedProfiles(),
       getPartners(),
       getTestimonials(),
       getFAQs(),
@@ -33,19 +32,13 @@ export default async function Home() {
       <HeroSection />
       <div className="relative z-10 bg-background">
         <WhoWeAreSection />
-        <div
-          className="relative bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: "url(/images/mission-bg.png)" }}
-        >
-          <MissionSection />
-          <StatsSection stats={stats} />
-        </div>
+        <MissionSection />
+        <StatsSection stats={stats} />
         <EventsSection events={events} />
-        <MembersSpotlight members={members} />
+        <MembersSpotlight profiles={profiles} />
         <PartnersSection partners={partners} />
         <WallOfLove testimonials={testimonials} />
         <FAQSection faqs={faqs} />
-        <JoinCTA />
       </div>
     </>
   );

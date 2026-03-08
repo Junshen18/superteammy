@@ -27,7 +27,7 @@ interface EventsSectionProps {
   events: Event[];
 }
 
-const PAST_EVENTS_PER_PAGE = 10;
+const PAST_EVENTS_PER_PAGE = 12;
 
 export function EventsSection({ events }: EventsSectionProps) {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
@@ -38,7 +38,7 @@ export function EventsSection({ events }: EventsSectionProps) {
   const hasMorePastEvents = pastEventsToShow < pastEvents.length;
 
   return (
-    <section id="events" className="bg-[#0D0E08] overflow-x-hidden w-full">
+    <section id="events" className="bg-[#080B0E] overflow-x-hidden w-full">
       {/* Dome Gallery - full screen with title overlay */}
       <div
         ref={ref}
@@ -57,7 +57,7 @@ export function EventsSection({ events }: EventsSectionProps) {
               maxVerticalRotationDeg={10}
               fit={0.75}
               fitBasis="width"
-              overlayBlurColor="#0D0E08"
+              overlayBlurColor="#080B0E"
             />
           </motion.div>
         </div>
@@ -136,22 +136,41 @@ export function EventsSection({ events }: EventsSectionProps) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
-              className="flex justify-center mb-4 "
+              className="flex justify-center "
             >
-              <div className="w-full max-w-[540px]">
-                <iframe
-                  src="https://lu.ma/embed/calendar/cal-sZfiZHfUS5piycU/events?lt=dark"
-                  width="540"
-                  height="800"
-                  frameBorder="0"
-                  allowFullScreen
-                  className="w-full min-h-[700px] rounded"
-                  style={{
-                    border: "1px solid rgba(191, 203, 218, 0.53)",
-                    borderRadius: "4px",
-                  }}
-                  title="Superteam Malaysia Events on Luma"
-                />
+              <div className="flex flex-col items-center justify-center max-w-[540px] w-full">
+                <div className="w-full mb-4 ">
+                  <iframe
+                    src="https://lu.ma/embed/calendar/cal-sZfiZHfUS5piycU/events?lt=dark"
+                    width="540"
+                    height="800"
+                    frameBorder="0"
+                    allowFullScreen
+                    className="w-full min-h-[700px] rounded"
+                    style={{
+                      border: "0px solid rgba(191, 203, 218, 0.53)",
+                      borderRadius: "4px",
+                    }}
+                    title="Superteam Malaysia Events on Luma"
+                  />
+                </div>
+                <div className="text-center">
+                  <a
+                    href="https://lu.ma/superteammy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group relative overflow-hidden inline-flex items-center justify-center gap-2 min-h-[40px] px-4 py-2 rounded-[8px] bg-[#20211B]/20 border border-white/10 font-[family-name:var(--font-orbitron)] font-medium text-sm transition-colors duration-300 hover:border-white cursor-pointer"
+                  >
+                    <span
+                      className="absolute inset-0 z-0 origin-left scale-x-0 bg-white transition-transform duration-300 ease-out group-hover:scale-x-100"
+                      aria-hidden
+                    />
+                    <span className="relative z-10 flex items-center gap-2 pointer-events-none transition-colors duration-300 text-white group-hover:text-black">
+                      View All Events on Luma
+                      <ArrowUpRight className="w-4 h-4" />
+                    </span>
+                  </a>
+                </div>
               </div>
             </motion.div>
           )}
@@ -204,9 +223,15 @@ export function EventsSection({ events }: EventsSectionProps) {
                   <button
                     type="button"
                     onClick={() => setPastEventsToShow((n) => n + PAST_EVENTS_PER_PAGE)}
-                    className="px-6 py-2.5 rounded-lg text-sm font-semibold text-white/80 hover:text-white border border-white/20 hover:border-white/30 transition-all"
+                    className="group relative overflow-hidden inline-flex items-center justify-center min-h-[40px] px-4 py-2 rounded-[8px] bg-[#20211B]/20 border border-white/10 font-[family-name:var(--font-orbitron)] font-medium text-sm transition-colors duration-300 hover:border-white cursor-pointer"
                   >
-                    View more
+                    <span
+                      className="absolute inset-0 z-0 origin-left scale-x-0 bg-white transition-transform duration-300 ease-out group-hover:scale-x-100"
+                      aria-hidden
+                    />
+                    <span className="relative z-10 pointer-events-none transition-colors duration-300 text-white/80 group-hover:text-black">
+                      View more
+                    </span>
                   </button>
                 </div>
               )}
@@ -214,18 +239,7 @@ export function EventsSection({ events }: EventsSectionProps) {
           )}
         </AnimatePresence>
 
-        {/* Luma CTA */}
-        <div className="text-center">
-          <a
-            href="https://lu.ma/superteammy"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold text-solana-green border border-solana-green/20 hover:bg-solana-green/5 transition-all"
-          >
-            View All Events on Luma
-            <ArrowUpRight className="w-4 h-4" />
-          </a>
-        </div>
+
       </div>
     </section>
   );

@@ -172,7 +172,7 @@ export function MissionSection() {
       {/* Background - Next.js Image auto-serves WebP when supported */}
       <div className="absolute inset-0 z-0">
         <Image
-          src="/images/mission-bg1.png"
+          src="/images/mission-bg.png"
           alt=""
           fill
           className="object-cover object-center"

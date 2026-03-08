@@ -1,5 +1,5 @@
 import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
+import { ConditionalFooter } from "@/components/layout/ConditionalFooter";
 import { AppShell } from "@/components/layout/AppShell";
 
 export default function SiteLayout({
@@ -11,7 +11,7 @@ export default function SiteLayout({
     <AppShell>
       <Navbar />
       <main>{children}</main>
-      <Footer />
+      <ConditionalFooter />
     </AppShell>
   );
 }

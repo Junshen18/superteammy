@@ -38,10 +38,14 @@ export function PartnersSection({ partners }: PartnersSectionProps) {
               className="group flex items-center justify-center p-8 rounded-2xl bg-surface/30 border border-white/5 hover:border-solana-purple/20 hover:bg-surface/60 transition-all duration-300"
             >
               <div className="text-center">
-                <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mx-auto mb-3 group-hover:bg-white/10 transition-colors">
-                  <span className="text-lg font-bold text-muted group-hover:text-white transition-colors">
-                    {partner.name.charAt(0)}
-                  </span>
+                <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mx-auto mb-3 group-hover:bg-white/10 transition-colors overflow-hidden">
+                  {partner.logo_url ? (
+                    <img src={partner.logo_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-lg font-bold text-muted group-hover:text-white transition-colors">
+                      {partner.name.charAt(0)}
+                    </span>
+                  )}
                 </div>
                 <p className="text-sm font-medium text-muted group-hover:text-white transition-colors">
                   {partner.name}
