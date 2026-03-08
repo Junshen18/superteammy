@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Plus, MoreVertical, Pencil, Archive, Calendar, MapPin, RefreshCw, ImageIcon } from "lucide-react";
+import { Plus, MoreVertical, Pencil, Archive, Calendar, MapPin, RefreshCw, ImageIcon, Search, Filter, ChevronDown } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import type { Event } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,26 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
+
+const DATE_OPERATORS = [
+  { id: "is" as const, label: "Is" },
+  { id: "is_before" as const, label: "Is before" },
+  { id: "is_after" as const, label: "Is after" },
+  { id: "is_on_or_before" as const, label: "Is on or before" },
+  { id: "is_on_or_after" as const, label: "Is on or after" },
+  { id: "is_in_between" as const, label: "Is in between" },
+] as const;
+
+function formatDateLabel(d: Date) {
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+}
 
 interface AdminEventsClientProps {
   initialEvents: Event[];
@@ -36,6 +55,12 @@ export function AdminEventsClient({ initialEvents }: AdminEventsClientProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [archiveConfirm, setArchiveConfirm] = useState<{ id: string; title: string } | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const [statusFilter, setStatusFilter] = useState<"all" | "upcoming" | "past">("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [dateFilterOpen, setDateFilterOpen] = useState(false);
+  const [dateOperator, setDateOperator] = useState<(typeof DATE_OPERATORS)[number]["id"]>("is_in_between");
+  const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
+  const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
   const [toastExiting, setToastExiting] = useState(false);
   const [unsyncedCount, setUnsyncedCount] = useState<number | null>(null);
 
@@ -167,6 +192,36 @@ export function AdminEventsClient({ initialEvents }: AdminEventsClientProps) {
     setArchiveConfirm({ id: event.id, title: event.title });
   }
 
+  const filteredEvents = events.filter((event) => {
+    const matchesStatus =
+      statusFilter === "all" ||
+      (statusFilter === "upcoming" && event.is_upcoming) ||
+      (statusFilter === "past" && !event.is_upcoming);
+    const matchesSearch =
+      !searchQuery.trim() ||
+      event.title.toLowerCase().includes(searchQuery.toLowerCase().trim()) ||
+      event.location?.toLowerCase().includes(searchQuery.toLowerCase().trim());
+    const eventDate = new Date(event.date);
+    const eventDayStart = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+    let matchesDate = true;
+    if (dateFrom || dateTo) {
+      if (dateOperator === "is_in_between" && dateFrom && dateTo) {
+        const fromStart = new Date(dateFrom.getFullYear(), dateFrom.getMonth(), dateFrom.getDate());
+        const toEnd = new Date(dateTo.getFullYear(), dateTo.getMonth(), dateTo.getDate(), 23, 59, 59);
+        matchesDate = eventDate >= fromStart && eventDate <= toEnd;
+      } else if (dateFrom) {
+        const fromStart = new Date(dateFrom.getFullYear(), dateFrom.getMonth(), dateFrom.getDate());
+        const fromEnd = new Date(dateFrom.getFullYear(), dateFrom.getMonth(), dateFrom.getDate(), 23, 59, 59);
+        if (dateOperator === "is") matchesDate = eventDayStart.getTime() === fromStart.getTime();
+        else if (dateOperator === "is_before") matchesDate = eventDate < fromStart;
+        else if (dateOperator === "is_after") matchesDate = eventDate > fromEnd;
+        else if (dateOperator === "is_on_or_before") matchesDate = eventDate <= fromEnd;
+        else if (dateOperator === "is_on_or_after") matchesDate = eventDate >= fromStart;
+      }
+    }
+    return matchesStatus && matchesSearch && matchesDate;
+  });
+
   async function handleArchiveConfirm() {
     if (!archiveConfirm) return;
     const { error } = await supabase.from("events").update({ is_archived: true }).eq("id", archiveConfirm.id);
@@ -205,8 +260,132 @@ export function AdminEventsClient({ initialEvents }: AdminEventsClientProps) {
         </div>
       </div>
 
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-wrap mb-6">
+        <div className="relative flex-1 min-w-[200px] max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by title or location..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 cursor-text"
+          />
+        </div>
+        
+        <div className="flex gap-2">
+          {(["all", "upcoming", "past"] as const).map((status) => (
+            <Button
+              key={status}
+              variant={statusFilter === status ? "default" : "outline"}
+              size="sm"
+              onClick={() => setStatusFilter(status)}
+              className="cursor-pointer capitalize"
+            >
+              {status}
+            </Button>
+          ))}
+        </div>
+        <Popover open={dateFilterOpen} onOpenChange={setDateFilterOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="cursor-pointer gap-2 border-white/10 bg-[#080B0E] hover:bg-[#171717]"
+            >
+              <Filter className="w-4 h-4 text-white" />
+              <span className="text-sm">
+                {dateFrom && dateTo && dateOperator === "is_in_between"
+                  ? `Date: ${formatDateLabel(dateFrom)} - ${formatDateLabel(dateTo)}`
+                  : dateFrom && dateOperator !== "is_in_between"
+                    ? `Date: ${DATE_OPERATORS.find((o) => o.id === dateOperator)?.label ?? ""} ${formatDateLabel(dateFrom)}`
+                    : "Date"}
+              </span>
+              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0 bg-[#080B0E] border-white/10" align="start">
+            <div className="p-4 space-y-4">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-white/80">Start Date</span>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="cursor-pointer gap-1 min-w-[140px] justify-between bg-[#171717] border-white/10 text-white">
+                        {DATE_OPERATORS.find((o) => o.id === dateOperator)?.label ?? "Is"}
+                        <ChevronDown className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="bg-[#080B0E] border-white/10 text-white">
+                      {DATE_OPERATORS.map((op) => (
+                        <DropdownMenuItem key={op.id} onClick={() => setDateOperator(op.id)} className="cursor-pointer text-white focus:bg-white/10 focus:text-white">
+                          {op.label}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setDateFrom(undefined); setDateTo(undefined); setDateFilterOpen(false); }}
+                  className="text-sm text-red-500 hover:text-red-400 cursor-pointer"
+                >
+                  Delete
+                </button>
+              </div>
+              <div className="flex gap-4">
+                <div>
+                  <p className="text-xs text-white/80 mb-1">From</p>
+                  <CalendarComponent
+                    mode="single"
+                    selected={dateFrom}
+                    onSelect={(d) => setDateFrom(d ?? undefined)}
+                    className="rounded-md border border-white/10"
+                    classNames={{
+                      caption_label: "text-white font-medium",
+                      weekdays: "flex w-full justify-center",
+                      weekday: "flex-1 min-w-(--cell-size) text-center text-white/70 text-[0.8rem]",
+                      table: "pl-(--cell-size) pr-(--cell-size)",
+                      day: "[&_button]:text-white [&_button]:hover:bg-white/10 [&_button]:hover:text-white [&[data-selected]_button]:bg-white/20 [&[data-selected]_button]:text-white",
+                      outside: "[&_button]:text-white/40",
+                      button_previous: "text-white hover:bg-white/10",
+                      button_next: "text-white hover:bg-white/10",
+                    }}
+                  />
+                </div>
+                {dateOperator === "is_in_between" && (
+                  <div>
+                    <p className="text-xs text-white/80 mb-1">To</p>
+                    <CalendarComponent
+                      mode="single"
+                      selected={dateTo}
+                      onSelect={(d) => setDateTo(d ?? undefined)}
+                      disabled={(d) => dateFrom ? d < dateFrom : false}
+                      className="rounded-md border border-white/10"
+                      classNames={{
+                        caption_label: "text-white font-medium",
+                        weekdays: "flex w-full justify-center",
+                        weekday: "flex-1 min-w-(--cell-size) text-center text-white/70 text-[0.8rem]",
+                        table: "pl-(--cell-size) pr-(--cell-size)",
+                        day: "[&_button]:text-white [&_button]:hover:bg-white/10 [&_button]:hover:text-white [&[data-selected]_button]:bg-white [&[data-selected]_button]:text-black",
+                        outside: "[&_button]:text-white/40",
+                        button_previous: "text-white hover:bg-white/10",
+                        button_next: "text-white hover:bg-white/10",
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
+
+      {filteredEvents.length === 0 ? (
+        <p className="text-sm text-muted-foreground py-8 text-center">
+          {events.length === 0 ? "No events yet." : "No events match your filters."}
+        </p>
+      ) : (
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-4">
-        {events.map((event) => (
+        {filteredEvents.map((event) => (
           <Card key={event.id} className="flex flex-row items-start gap-4 p-4 overflow-hidden min-w-0 w-full max-w-full">
             {/* 1. Cover image */}
             <div className="size-24 shrink-0 rounded-lg bg-muted overflow-hidden">
@@ -244,18 +423,19 @@ export function AdminEventsClient({ initialEvents }: AdminEventsClientProps) {
                     <span className="sr-only">Actions</span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-[#0D0E08] border-white/10 text-white/60 [&_svg]:text-white/60">
-                  <DropdownMenuItem onClick={() => openEdit(event)} className="cursor-pointer text-white/60 focus:bg-[#1a1b16] focus:text-white/60 [&_svg]:text-white/60"><Pencil className="w-4 h-4" /> Edit</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => openArchiveConfirm(event)} className="cursor-pointer text-white/60 focus:bg-[#1a1b16] focus:text-white/60 [&_svg]:text-amber-500"><Archive className="w-4 h-4" /> Archive</DropdownMenuItem>
+                <DropdownMenuContent align="end" className="bg-[#080B0E] border-white/10 text-white/60 [&_svg]:text-white/60">
+                  <DropdownMenuItem onClick={() => openEdit(event)} className="cursor-pointer text-white/60 focus:bg-[#171717] focus:text-white/60 [&_svg]:text-white/60"><Pencil className="w-4 h-4" /> Edit</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openArchiveConfirm(event)} className="cursor-pointer text-white/60 focus:bg-[#171717] focus:text-white/60 [&_svg]:text-amber-500"><Archive className="w-4 h-4" /> Archive</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
           </Card>
         ))}
       </div>
+      )}
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto bg-[#0D0E08] border-border/50 text-foreground [&_input]:bg-[#1a1b16] [&_input]:border-border/50 [&_textarea]:bg-[#1a1b16] [&_textarea]:border-border/50 [&_button]:cursor-pointer">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto bg-[#080B0E] border-border/50 text-foreground [&_input]:bg-[#171717] [&_input]:border-border/50 [&_textarea]:bg-[#171717] [&_textarea]:border-border/50 [&_button]:cursor-pointer">
           <DialogHeader>
             <DialogTitle>{editingEvent ? "Edit Event" : "Add Event"}</DialogTitle>
           </DialogHeader>
@@ -266,7 +446,7 @@ export function AdminEventsClient({ initialEvents }: AdminEventsClientProps) {
             </div>
             <div className="space-y-2">
               <Label>Description</Label>
-              <textarea placeholder="Description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={3} className="flex min-h-[80px] w-full rounded-md border border-input bg-[#1a1b16] px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 cursor-text" />
+              <textarea placeholder="Description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={6} className="flex min-h-[160px] w-full rounded-md border border-input bg-[#171717] px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 cursor-text" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -286,14 +466,14 @@ export function AdminEventsClient({ initialEvents }: AdminEventsClientProps) {
               <Label>Cover image</Label>
               <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
               <div className="flex items-center gap-3">
-                <div className="w-20 h-20 rounded-lg bg-[#1a1b16] overflow-hidden shrink-0">
+                <div className="w-20 h-20 rounded-lg bg-[#171717] overflow-hidden shrink-0">
                   {formData.image_url ? (
                     <img src={formData.image_url} alt="" className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center"><ImageIcon className="w-8 h-8 text-muted-foreground" /></div>
                   )}
                 </div>
-                <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploading} className="cursor-pointer bg-[#0D0E08] border-border/50 hover:bg-[#1a1b16] hover:text-white">
+                <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploading} className="cursor-pointer bg-[#080B0E] border-border/50 hover:bg-[#171717] hover:text-white">
                   {isUploading ? "Uploading…" : "Upload image"}
                 </Button>
               </div>
@@ -303,7 +483,7 @@ export function AdminEventsClient({ initialEvents }: AdminEventsClientProps) {
             </label>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsModalOpen(false)} className="cursor-pointer bg-[#0D0E08] border-border/50 hover:bg-[#1a1b16] hover:text-white">Cancel</Button>
+            <Button variant="outline" onClick={() => setIsModalOpen(false)} className="cursor-pointer bg-[#080B0E] border-border/50 hover:bg-[#171717] hover:text-white">Cancel</Button>
             <Button onClick={handleSave} className="cursor-pointer">{editingEvent ? "Save" : "Add Event"}</Button>
           </DialogFooter>
         </DialogContent>
@@ -311,13 +491,13 @@ export function AdminEventsClient({ initialEvents }: AdminEventsClientProps) {
 
       {/* Archive confirmation modal */}
       <Dialog open={!!archiveConfirm} onOpenChange={(open) => !open && setArchiveConfirm(null)}>
-        <DialogContent className="max-w-md bg-[#0D0E08] border-white/10 text-foreground">
+        <DialogContent className="max-w-md bg-[#080B0E] border-white/10 text-foreground">
           <DialogHeader className="overflow-hidden min-w-0">
             <DialogTitle className="truncate" title={archiveConfirm?.title}>Archive {archiveConfirm?.title}?</DialogTitle>
             <p className="text-sm text-muted-foreground">It will be hidden from the landing page and won&apos;t be re-fetched on sync.</p>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setArchiveConfirm(null)} className="cursor-pointer bg-[#0D0E08] border-border/50 hover:bg-[#1a1b16] hover:text-white">Cancel</Button>
+            <Button variant="outline" onClick={() => setArchiveConfirm(null)} className="cursor-pointer bg-[#080B0E] border-border/50 hover:bg-[#171717] hover:text-white">Cancel</Button>
             <Button onClick={handleArchiveConfirm} className="cursor-pointer">Archive</Button>
           </DialogFooter>
         </DialogContent>
@@ -327,7 +507,7 @@ export function AdminEventsClient({ initialEvents }: AdminEventsClientProps) {
       {toast && (
         <div
           className={cn(
-            "fixed left-1/2 top-6 z-50 -translate-x-1/2 rounded-lg border border-white/10 bg-[#0D0E08] px-4 py-3 shadow-lg transition-all duration-300",
+            "fixed left-1/2 top-6 z-50 -translate-x-1/2 rounded-lg border border-white/10 bg-[#080B0E] px-4 py-3 shadow-lg transition-all duration-300",
             toastExiting ? "-translate-y-4 opacity-0" : "translate-y-0 opacity-100"
           )}
         >

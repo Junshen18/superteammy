@@ -1,109 +1,119 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Search, MoreVertical, Shield, Eye, Trash2, ExternalLink, Mail } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
-import type { Member } from "@/lib/types";
+import type { Profile, UserRole } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 
 interface AdminMembersClientProps {
-  initialMembers: Member[];
+  initialProfiles: Profile[];
+  userRole?: UserRole;
 }
 
-export function AdminMembersClient({ initialMembers }: AdminMembersClientProps) {
-  const [members, setMembers] = useState<Member[]>(initialMembers);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingMember, setEditingMember] = useState<Member | null>(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    role: "",
-    company: "",
-    bio: "",
-    twitter_url: "",
-    skill_tags: "",
-    is_featured: false,
-    is_core_team: false,
+const roleColors: Record<UserRole, string> = {
+  super_admin: "bg-red-500/10 text-red-500",
+  admin: "bg-blue-500/10 text-blue-500",
+  member: "bg-green-500/10 text-green-500",
+};
+
+export function AdminMembersClient({ initialProfiles, userRole = "member" }: AdminMembersClientProps) {
+  const [profiles, setProfiles] = useState<Profile[]>(initialProfiles);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "onboarded" | "pending">("all");
+  const [viewProfile, setViewProfile] = useState<Profile | null>(null);
+  const [roleChangeTarget, setRoleChangeTarget] = useState<{ id: string; nickname: string; currentRole: UserRole } | null>(null);
+  const [newRole, setNewRole] = useState<UserRole>("member");
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; nickname: string } | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const [toastExiting, setToastExiting] = useState(false);
+
+  const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    setToastExiting(false);
+    toastTimeoutRef.current = setTimeout(() => {
+      setToastExiting(true);
+      toastTimeoutRef.current = setTimeout(() => {
+        setToast(null);
+        setToastExiting(false);
+      }, 300);
+    }, 4000);
+    return () => {
+      if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    };
+  }, [toast]);
+
+  const filteredProfiles = profiles.filter((p) => {
+    const matchesSearch =
+      !searchQuery.trim() ||
+      (p.nickname || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (p.real_name || "").toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesStatus =
+      statusFilter === "all" ||
+      (statusFilter === "onboarded" && p.onboarding_completed) ||
+      (statusFilter === "pending" && !p.onboarding_completed);
+
+    return matchesSearch && matchesStatus;
   });
 
-  function openCreate() {
-    setEditingMember(null);
-    setFormData({
-      name: "",
-      role: "",
-      company: "",
-      bio: "",
-      twitter_url: "",
-      skill_tags: "",
-      is_featured: false,
-      is_core_team: false,
+  async function handleRoleChange() {
+    if (!roleChangeTarget) return;
+
+    const res = await fetch("/api/admin/update-role", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: roleChangeTarget.id, newRole }),
     });
-    setIsModalOpen(true);
-  }
 
-  function openEdit(member: Member) {
-    setEditingMember(member);
-    setFormData({
-      name: member.name,
-      role: member.role,
-      company: member.company,
-      bio: member.bio,
-      twitter_url: member.twitter_url,
-      skill_tags: member.skill_tags.join(", "),
-      is_featured: member.is_featured,
-      is_core_team: member.is_core_team,
-    });
-    setIsModalOpen(true);
-  }
-
-  async function handleSave() {
-    const payload = {
-      ...formData,
-      skill_tags: formData.skill_tags.split(",").map((s) => s.trim()),
-    };
-
-    if (editingMember) {
-      const { error } = await supabase
-        .from("members")
-        .update(payload)
-        .eq("id", editingMember.id);
-
-      if (!error) {
-        setMembers(
-          members.map((m) =>
-            m.id === editingMember.id ? { ...m, ...payload } : m
-          )
-        );
-      }
+    if (res.ok) {
+      setProfiles(profiles.map((p) =>
+        p.id === roleChangeTarget.id ? { ...p, user_role: newRole } : p
+      ));
+      setToast({ message: `Role updated to ${newRole.replace("_", " ")}`, type: "success" });
     } else {
-      const { data, error } = await supabase
-        .from("members")
-        .insert({
-          ...payload,
-          photo_url: "/images/members/placeholder.jpg",
-          achievements: {},
-          display_order: members.length + 1,
-        })
-        .select()
-        .single();
-
-      if (!error && data) {
-        setMembers([...members, data as Member]);
-      }
+      const data = await res.json();
+      setToast({ message: data.error || "Failed to update role", type: "error" });
     }
-    setIsModalOpen(false);
+    setRoleChangeTarget(null);
   }
 
-  async function handleDelete(id: string) {
-    if (confirm("Are you sure you want to delete this member?")) {
-      const { error } = await supabase.from("members").delete().eq("id", id);
-      if (!error) {
-        setMembers(members.filter((m) => m.id !== id));
-      }
+  async function handleDelete() {
+    if (!deleteConfirm) return;
+
+    const res = await fetch("/api/admin/delete-user", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: deleteConfirm.id }),
+    });
+
+    if (res.ok) {
+      setProfiles(profiles.filter((p) => p.id !== deleteConfirm.id));
+      setToast({ message: "Member deleted", type: "success" });
+    } else {
+      const data = await res.json();
+      setToast({ message: data.error || "Failed to delete member", type: "error" });
     }
+    setDeleteConfirm(null);
   }
 
   return (
@@ -111,135 +121,327 @@ export function AdminMembersClient({ initialMembers }: AdminMembersClientProps) 
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold">Members</h1>
-          <p className="text-sm text-muted-foreground mt-1">Manage community member profiles</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Manage community members and their roles
+          </p>
         </div>
-        <Button onClick={openCreate}><Plus className="w-4 h-4 mr-2" /> Add Member</Button>
+        {userRole === "super_admin" && (
+          <Button asChild className="cursor-pointer">
+            <a href="/admin/invites">
+              <Mail className="w-4 h-4 mr-2" /> Generate Invite
+            </a>
+          </Button>
+        )}
       </div>
 
-      <Card className="overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-white/5">
-                <th className="px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider">
-                  Role
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider">
-                  Company
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider">
-                  Skills
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-4 text-right text-xs font-semibold text-muted uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {members.map((member) => (
-                <tr
-                  key={member.id}
-                  className="border-b border-white/5 hover:bg-white/[0.02] transition-colors"
-                >
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-solana-purple to-solana-green p-0.5 flex-shrink-0">
-                        <div className="w-full h-full rounded-full bg-surface flex items-center justify-center">
-                          <span className="text-xs font-bold text-white">
-                            {member.name.charAt(0)}
-                          </span>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-wrap mb-6">
+        <div className="relative flex-1 min-w-[200px] max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by name..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 cursor-text"
+          />
+        </div>
+        <div className="flex gap-2">
+          {(["all", "onboarded", "pending"] as const).map((status) => (
+            <Button
+              key={status}
+              variant={statusFilter === status ? "default" : "outline"}
+              size="sm"
+              onClick={() => setStatusFilter(status)}
+              className="cursor-pointer capitalize"
+            >
+              {status}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      {filteredProfiles.length === 0 ? (
+        <p className="text-sm text-muted-foreground py-8 text-center">
+          {profiles.length === 0 ? "No members yet." : "No members match your filters."}
+        </p>
+      ) : (
+        <Card className="overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/5">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider">Member</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider">Roles</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider">Skills</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider">System Role</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-4 text-right text-xs font-semibold text-muted uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredProfiles.map((profile) => (
+                  <tr key={profile.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-solana-purple to-solana-green p-0.5 flex-shrink-0">
+                          {profile.avatar_url ? (
+                            <img src={profile.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full rounded-full bg-surface flex items-center justify-center">
+                              <span className="text-xs font-bold text-white">
+                                {(profile.nickname || profile.real_name || "?").charAt(0)}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <span className="text-white font-medium">{profile.nickname || profile.real_name || "—"}</span>
+                          {profile.real_name && profile.nickname && (
+                            <p className="text-xs text-muted-foreground">{profile.real_name}</p>
+                          )}
                         </div>
                       </div>
-                      <span className="text-white font-medium">{member.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-muted">{member.role}</td>
-                  <td className="px-6 py-4 text-muted">{member.company}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex flex-wrap gap-1">
-                      {member.skill_tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="px-2 py-0.5 rounded-full bg-white/5 text-xs text-muted"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    {member.is_featured && (
-                      <span className="px-2 py-0.5 rounded-full bg-solana-green/10 text-solana-green text-xs">
-                        Featured
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-wrap gap-1">
+                        {(profile.roles || []).map((r) => (
+                          <span key={r.id} className="px-2 py-0.5 rounded-full bg-white/5 text-xs text-muted">
+                            {r.name}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-wrap gap-1">
+                        {(profile.skills || []).slice(0, 3).map((s) => (
+                          <span key={s.id} className="px-2 py-0.5 rounded-full bg-white/5 text-xs text-muted">
+                            {s.name}
+                          </span>
+                        ))}
+                        {(profile.skills || []).length > 3 && (
+                          <span className="px-2 py-0.5 rounded-full bg-white/5 text-xs text-muted">
+                            +{profile.skills!.length - 3}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium capitalize", roleColors[profile.user_role])}>
+                        {profile.user_role.replace("_", " ")}
                       </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Button variant="ghost" size="icon" onClick={() => openEdit(member)}><Pencil className="w-4 h-4" /></Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(member.id)} className="text-destructive hover:text-destructive"><Trash2 className="w-4 h-4" /></Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Card>
-
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{editingMember ? "Edit Member" : "Add Member"}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Name</Label>
-              <Input placeholder="Name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Role</Label>
-                <Input placeholder="Role" value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>Company</Label>
-                <Input placeholder="Company" value={formData.company} onChange={(e) => setFormData({ ...formData, company: e.target.value })} />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Bio</Label>
-              <textarea placeholder="Bio" value={formData.bio} onChange={(e) => setFormData({ ...formData, bio: e.target.value })} rows={3} className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" />
-            </div>
-            <div className="space-y-2">
-              <Label>Twitter/X URL</Label>
-              <Input type="url" placeholder="https://twitter.com/..." value={formData.twitter_url} onChange={(e) => setFormData({ ...formData, twitter_url: e.target.value })} />
-            </div>
-            <div className="space-y-2">
-              <Label>Skill tags (comma-separated)</Label>
-              <Input placeholder="React, Solana, Design" value={formData.skill_tags} onChange={(e) => setFormData({ ...formData, skill_tags: e.target.value })} />
-            </div>
-            <div className="flex gap-6">
-              <label className="flex items-center gap-2 text-sm cursor-pointer">
-                <input type="checkbox" checked={formData.is_featured} onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })} className="rounded border-input" /> Featured
-              </label>
-              <label className="flex items-center gap-2 text-sm cursor-pointer">
-                <input type="checkbox" checked={formData.is_core_team} onChange={(e) => setFormData({ ...formData, is_core_team: e.target.checked })} className="rounded border-input" /> Core Team
-              </label>
-            </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      {profile.onboarding_completed ? (
+                        <span className="px-2 py-0.5 rounded-full bg-green-500/10 text-green-500 text-xs">
+                          Active
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 text-xs">
+                          Pending
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="shrink-0 cursor-pointer">
+                            <MoreVertical className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="bg-[#080B0E] border-white/10 text-white/60 [&_svg]:text-white/60">
+                          <DropdownMenuItem
+                            onClick={() => setViewProfile(profile)}
+                            className="cursor-pointer text-white/60 focus:bg-[#171717] focus:text-white/60"
+                          >
+                            <Eye className="w-4 h-4" /> View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setRoleChangeTarget({ id: profile.id, nickname: profile.nickname || profile.real_name || "Member", currentRole: profile.user_role });
+                              setNewRole(profile.user_role);
+                            }}
+                            className="cursor-pointer text-white/60 focus:bg-[#171717] focus:text-white/60"
+                          >
+                            <Shield className="w-4 h-4" /> Change Role
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => setDeleteConfirm({ id: profile.id, nickname: profile.nickname || profile.real_name || "Member" })}
+                            className="cursor-pointer text-white/60 focus:bg-[#171717] focus:text-white/60 [&_svg]:text-red-500"
+                          >
+                            <Trash2 className="w-4 h-4" /> Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
+        </Card>
+      )}
+
+      {/* View Profile Dialog */}
+      <Dialog open={!!viewProfile} onOpenChange={(open) => !open && setViewProfile(null)}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto bg-[#080B0E] border-border/50 text-foreground">
+          <DialogHeader>
+            <DialogTitle>{viewProfile?.nickname || viewProfile?.real_name || "Member"}</DialogTitle>
+          </DialogHeader>
+          {viewProfile && (
+            <div className="space-y-4 text-sm">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-solana-purple to-solana-green p-0.5 shrink-0">
+                  {viewProfile.avatar_url ? (
+                    <img src={viewProfile.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full rounded-full bg-surface flex items-center justify-center">
+                      <span className="text-xl font-bold text-white">
+                        {(viewProfile.nickname || viewProfile.real_name || "?").charAt(0)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <p className="text-white font-semibold">{viewProfile.nickname}</p>
+                  <p className="text-muted-foreground">{viewProfile.real_name}</p>
+                  <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium capitalize", roleColors[viewProfile.user_role])}>
+                    {viewProfile.user_role.replace("_", " ")}
+                  </span>
+                </div>
+              </div>
+
+              {viewProfile.bio && (
+                <div>
+                  <p className="text-muted-foreground mb-1">Bio</p>
+                  <p className="text-white">{viewProfile.bio}</p>
+                </div>
+              )}
+
+              {(viewProfile.roles || []).length > 0 && (
+                <div>
+                  <p className="text-muted-foreground mb-1">Roles</p>
+                  <div className="flex flex-wrap gap-1">
+                    {viewProfile.roles!.map((r) => (
+                      <span key={r.id} className="px-2 py-0.5 rounded-full bg-white/5 text-xs text-white">{r.name}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {(viewProfile.companies || []).length > 0 && (
+                <div>
+                  <p className="text-muted-foreground mb-1">Companies</p>
+                  <div className="flex flex-wrap gap-1">
+                    {viewProfile.companies!.map((c) => (
+                      <span key={c.id} className="px-2 py-0.5 rounded-full bg-white/5 text-xs text-white">{c.name}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {(viewProfile.skills || []).length > 0 && (
+                <div>
+                  <p className="text-muted-foreground mb-1">Skills</p>
+                  <div className="flex flex-wrap gap-1">
+                    {viewProfile.skills!.map((s) => (
+                      <span key={s.id} className="px-2 py-0.5 rounded-full bg-white/5 text-xs text-white">{s.name}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-3">
+                {viewProfile.twitter_url && (
+                  <a href={viewProfile.twitter_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-primary hover:underline">
+                    <ExternalLink className="w-3 h-3" /> Twitter
+                  </a>
+                )}
+                {viewProfile.github_url && (
+                  <a href={viewProfile.github_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-primary hover:underline">
+                    <ExternalLink className="w-3 h-3" /> GitHub
+                  </a>
+                )}
+                {viewProfile.linkedin_url && (
+                  <a href={viewProfile.linkedin_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-primary hover:underline">
+                    <ExternalLink className="w-3 h-3" /> LinkedIn
+                  </a>
+                )}
+                {viewProfile.website_url && (
+                  <a href={viewProfile.website_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-primary hover:underline">
+                    <ExternalLink className="w-3 h-3" /> Website
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-            <Button onClick={handleSave}>{editingMember ? "Save Changes" : "Add Member"}</Button>
+            <Button variant="outline" onClick={() => setViewProfile(null)} className="cursor-pointer bg-[#080B0E] border-border/50 hover:bg-[#171717] hover:text-white">
+              Close
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Change Role Dialog */}
+      <Dialog open={!!roleChangeTarget} onOpenChange={(open) => !open && setRoleChangeTarget(null)}>
+        <DialogContent className="max-w-md bg-[#080B0E] border-border/50 text-foreground [&_button]:cursor-pointer">
+          <DialogHeader>
+            <DialogTitle>Change Role for {roleChangeTarget?.nickname}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Label>New Role</Label>
+            <div className="flex flex-col gap-2">
+              {(["member", "admin", "super_admin"] as const).map((role) => (
+                <button
+                  key={role}
+                  type="button"
+                  onClick={() => setNewRole(role)}
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors cursor-pointer border text-left",
+                    newRole === role
+                      ? "bg-primary/10 text-primary border-primary/30"
+                      : "bg-[#171717] text-muted-foreground border-border/50 hover:text-white"
+                  )}
+                >
+                  <Shield className="w-4 h-4" />
+                  <span className="capitalize">{role.replace("_", " ")}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRoleChangeTarget(null)} className="cursor-pointer bg-[#080B0E] border-border/50 hover:bg-[#171717] hover:text-white">
+              Cancel
+            </Button>
+            <Button onClick={handleRoleChange} className="cursor-pointer">Update Role</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <Dialog open={!!deleteConfirm} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
+        <DialogContent className="max-w-md bg-[#080B0E] border-white/10 text-foreground">
+          <DialogHeader>
+            <DialogTitle>Delete {deleteConfirm?.nickname}?</DialogTitle>
+            <p className="text-sm text-muted-foreground">
+              This will permanently delete the member&apos;s account and profile. This cannot be undone.
+            </p>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteConfirm(null)} className="cursor-pointer bg-[#080B0E] border-border/50 hover:bg-[#171717] hover:text-white">
+              Cancel
+            </Button>
+            <Button onClick={handleDelete} className="cursor-pointer bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {toast && (
+        <div className={cn("fixed left-1/2 top-6 z-50 -translate-x-1/2 rounded-lg border border-white/10 bg-[#080B0E] px-4 py-3 shadow-lg transition-all duration-300", toastExiting ? "-translate-y-4 opacity-0" : "translate-y-0 opacity-100")}>
+          <p className={cn("text-sm font-medium", toast.type === "error" ? "text-destructive" : "text-foreground")}>{toast.message}</p>
+        </div>
+      )}
     </div>
   );
 }
