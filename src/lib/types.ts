@@ -20,6 +20,67 @@ export interface Member {
   created_at: string;
 }
 
+export type UserRole = 'super_admin' | 'admin' | 'member';
+
+export interface Profile {
+  id: string;
+  user_role: UserRole;
+  nickname: string;
+  real_name: string;
+  avatar_url: string;
+  bio: string;
+  twitter_url: string;
+  github_url: string;
+  linkedin_url: string;
+  website_url: string;
+  telegram_url: string;
+  achievements: string;
+  talk_to_me_about: string;
+  is_featured: boolean;
+  display_order: number;
+  onboarding_completed: boolean;
+  created_at: string;
+  roles?: LookupTag[];
+  companies?: LookupTag[];
+  skills?: LookupTag[];
+  subskills?: SubskillTag[];
+}
+
+export interface LookupTag {
+  id: string;
+  name: string;
+}
+
+export interface SubskillTag {
+  id: string;
+  name: string;
+  skill_id?: string;
+}
+
+export interface Invite {
+  id: string;
+  token: string;
+  email: string | null;
+  invited_role: UserRole;
+  is_used: boolean;
+  used_by: string | null;
+  used_at: string | null;
+  expires_at: string;
+  created_by: string | null;
+  created_at: string;
+}
+
+export interface Project {
+  id: string;
+  profile_id: string;
+  title: string;
+  description: string;
+  link: string;
+  created_at: string;
+  skills?: LookupTag[];
+  subskills?: SubskillTag[];
+}
+
 export interface Event {
   id: string;
   luma_event_id?: string;

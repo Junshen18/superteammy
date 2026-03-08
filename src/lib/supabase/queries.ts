@@ -1,5 +1,5 @@
 import { createServerClient } from "./server";
-import type { Member, Event, Partner, Stat, Testimonial, FAQ } from "../types";
+import type { Member, Event, Partner, Stat, Testimonial, FAQ, Profile, Invite, LookupTag, SubskillTag, Project } from "../types";
 
 export async function getMembers(): Promise<Member[]> {
   const supabase = await createServerClient();
@@ -99,4 +99,162 @@ export async function getFAQs(): Promise<FAQ[]> {
     return [];
   }
   return data as FAQ[];
+}
+
+export async function getProfiles(): Promise<Profile[]> {
+  const supabase = await createServerClient();
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("onboarding_completed", true)
+    .order("display_order", { ascending: true });
+
+  if (error) {
+    console.error("Failed to fetch profiles:", error.message);
+    return [];
+  }
+
+  const profiles = data as Profile[];
+  return attachProfileRelations(supabase, profiles);
+}
+
+export async function getAllProfiles(): Promise<Profile[]> {
+  const supabase = await createServerClient();
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Failed to fetch all profiles:", error.message);
+    return [];
+  }
+
+  const profiles = data as Profile[];
+  return attachProfileRelations(supabase, profiles);
+}
+
+export async function getFeaturedProfiles(): Promise<Profile[]> {
+  const supabase = await createServerClient();
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("is_featured", true)
+    .eq("onboarding_completed", true)
+    .order("display_order", { ascending: true });
+
+  if (error) {
+    console.error("Failed to fetch featured profiles:", error.message);
+    return [];
+  }
+
+  const profiles = data as Profile[];
+  return attachProfileRelations(supabase, profiles);
+}
+
+async function attachProfileRelations(
+  supabase: Awaited<ReturnType<typeof createServerClient>>,
+  profiles: Profile[]
+): Promise<Profile[]> {
+  if (profiles.length === 0) return profiles;
+
+  const ids = profiles.map((p) => p.id);
+
+  const [rolesRes, companiesRes, skillsRes, subskillsRes] = await Promise.all([
+    supabase
+      .from("profile_roles")
+      .select("profile_id, roles:role_id(id, name)")
+      .in("profile_id", ids),
+    supabase
+      .from("profile_companies")
+      .select("profile_id, companies:company_id(id, name)")
+      .in("profile_id", ids),
+    supabase
+      .from("profile_skills")
+      .select("profile_id, skills:skill_id(id, name)")
+      .in("profile_id", ids),
+    supabase
+      .from("profile_subskills")
+      .select("profile_id, subskills:subskill_id(id, name, skill_id)")
+      .in("profile_id", ids),
+  ]);
+
+  const rolesMap = groupByProfile<LookupTag>(rolesRes.data, "roles");
+  const companiesMap = groupByProfile<LookupTag>(companiesRes.data, "companies");
+  const skillsMap = groupByProfile<LookupTag>(skillsRes.data, "skills");
+  const subskillsMap = groupByProfile<SubskillTag>(subskillsRes.data, "subskills");
+
+  return profiles.map((p) => ({
+    ...p,
+    roles: rolesMap[p.id] ?? [],
+    companies: companiesMap[p.id] ?? [],
+    skills: skillsMap[p.id] ?? [],
+    subskills: subskillsMap[p.id] ?? [],
+  }));
+}
+
+function groupByProfile<T>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  rows: any[] | null,
+  key: string
+): Record<string, T[]> {
+  const map: Record<string, T[]> = {};
+  if (!rows) return map;
+  for (const row of rows) {
+    const pid = row.profile_id as string;
+    const val = row[key] as T;
+    if (!val) continue;
+    if (!map[pid]) map[pid] = [];
+    map[pid].push(val);
+  }
+  return map;
+}
+
+export async function getInvites(): Promise<Invite[]> {
+  const supabase = await createServerClient();
+  const { data, error } = await supabase
+    .from("invites")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Failed to fetch invites:", error.message);
+    return [];
+  }
+  return data as Invite[];
+}
+
+export async function getLookupTags(table: "roles" | "companies" | "skills" | "subskills"): Promise<LookupTag[]> {
+  const supabase = await createServerClient();
+  const { data, error } = await supabase.from(table).select("id, name").order("name");
+  if (error) {
+    console.error(`Failed to fetch ${table}:`, error.message);
+    return [];
+  }
+  return data as LookupTag[];
+}
+
+export async function getSubskills(): Promise<SubskillTag[]> {
+  const supabase = await createServerClient();
+  const { data, error } = await supabase.from("subskills").select("id, name, skill_id").order("name");
+  if (error) {
+    console.error("Failed to fetch subskills:", error.message);
+    return [];
+  }
+  return data as SubskillTag[];
+}
+
+export async function getProfileProjects(profileId: string): Promise<Project[]> {
+  const supabase = await createServerClient();
+  const { data, error } = await supabase
+    .from("projects")
+    .select("*")
+    .eq("profile_id", profileId)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Failed to fetch projects:", error.message);
+    return [];
+  }
+  return data as Project[];
 }
