@@ -2,34 +2,44 @@
 
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { MemberCard } from "@/components/members/MemberCard";
+import { ProfileCard } from "@/components/members/ProfileCard";
 import { MemberFilters } from "@/components/members/MemberFilters";
-import type { Member } from "@/lib/types";
+import type { Profile, LookupTag } from "@/lib/types";
 
 interface MembersPageClientProps {
-  members: Member[];
+  profiles: Profile[];
+  availableSkills: LookupTag[];
 }
 
-export function MembersPageClient({ members }: MembersPageClientProps) {
+export function MembersPageClient({ profiles, availableSkills }: MembersPageClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
 
-  const filteredMembers = useMemo(() => {
-    return members.filter((member) => {
+  const filterOptions = useMemo(() => {
+    const skillNames = availableSkills.map((s) => s.name);
+    return ["All", "Core Team", ...skillNames];
+  }, [availableSkills]);
+
+  const filteredProfiles = useMemo(() => {
+    return profiles.filter((profile) => {
+      const displayName = profile.nickname || profile.real_name || "";
+      const roleNames = (profile.roles || []).map((r) => r.name).join(" ");
+      const companyNames = (profile.companies || []).map((c) => c.name).join(" ");
+
       const matchesSearch =
         searchQuery === "" ||
-        member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        member.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        member.role.toLowerCase().includes(searchQuery.toLowerCase());
+        displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        companyNames.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        roleNames.toLowerCase().includes(searchQuery.toLowerCase());
 
       const matchesFilter =
         activeFilter === "All" ||
-        (activeFilter === "Core Team" && member.is_core_team) ||
-        member.skill_tags.includes(activeFilter);
+        (activeFilter === "Core Team" && (profile.user_role === "admin" || profile.user_role === "super_admin")) ||
+        (profile.skills || []).some((s) => s.name === activeFilter);
 
       return matchesSearch && matchesFilter;
     });
-  }, [members, searchQuery, activeFilter]);
+  }, [profiles, searchQuery, activeFilter]);
 
   return (
     <div className="min-h-screen pt-28 pb-24">
@@ -63,6 +73,7 @@ export function MembersPageClient({ members }: MembersPageClientProps) {
             onFilterChange={setActiveFilter}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
+            filterOptions={filterOptions}
           />
         </motion.div>
 
@@ -72,13 +83,13 @@ export function MembersPageClient({ members }: MembersPageClientProps) {
           transition={{ duration: 0.3, delay: 0.2 }}
           className="text-sm text-muted-dark mb-6"
         >
-          Showing {filteredMembers.length} member{filteredMembers.length !== 1 ? "s" : ""}
+          Showing {filteredProfiles.length} member{filteredProfiles.length !== 1 ? "s" : ""}
         </motion.p>
 
-        {filteredMembers.length > 0 ? (
+        {filteredProfiles.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredMembers.map((member, index) => (
-              <MemberCard key={member.id} member={member} index={index} />
+            {filteredProfiles.map((profile, index) => (
+              <ProfileCard key={profile.id} profile={profile} index={index} />
             ))}
           </div>
         ) : (

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useScrambleText } from "@/hooks/useScrambleText";
 
@@ -206,11 +207,14 @@ function SocialLink({
 const SCROLL_UP_THRESHOLD = 150;
 
 export function Navbar() {
+  const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [visible, setVisible] = useState(false);
   const [pastHero, setPastHero] = useState(false);
   const lastScrollY = useRef(0);
   const scrollUpAccum = useRef(0);
+
+  const isMembersPage = pathname === "/members";
 
   const handleScroll = useCallback(() => {
     const currentY = window.scrollY;
@@ -260,7 +264,7 @@ export function Navbar() {
     };
   }, [menuOpen]);
 
-  const showBar = (visible && pastHero) || menuOpen;
+  const showBar = isMembersPage || (visible && pastHero) || menuOpen;
 
   return (
     <>

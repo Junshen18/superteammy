@@ -1,37 +1,40 @@
 "use client";
 
-const skillFilters = [
-  "All",
-  "Core Team",
-  "Rust",
-  "Frontend",
-  "Design",
-  "Content",
-  "Growth",
-  "Product",
-  "Community",
-];
-
 interface MemberFiltersProps {
   activeFilter: string;
   onFilterChange: (filter: string) => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
+  filterOptions?: string[];
 }
+
+const defaultFilters = [
+  "All",
+  "Core Team",
+  "Frontend",
+  "Backend",
+  "Blockchain",
+  "Design",
+  "Content",
+  "Growth",
+  "Community",
+];
 
 export function MemberFilters({
   activeFilter,
   onFilterChange,
   searchQuery,
   onSearchChange,
+  filterOptions,
 }: MemberFiltersProps) {
+  const filters = filterOptions || defaultFilters;
+
   return (
     <div className="space-y-6">
-      {/* Search */}
       <div className="relative">
         <input
           type="text"
-          placeholder="Search by name or company..."
+          placeholder="Search by name, role, or company..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           className="w-full px-5 py-3.5 rounded-xl bg-surface/50 border border-white/5 text-white placeholder-muted-dark focus:outline-none focus:border-solana-purple/30 focus:ring-1 focus:ring-solana-purple/20 transition-all text-sm"
@@ -51,9 +54,8 @@ export function MemberFilters({
         </svg>
       </div>
 
-      {/* Filter Chips */}
       <div className="flex flex-wrap gap-2">
-        {skillFilters.map((filter) => (
+        {filters.map((filter) => (
           <button
             key={filter}
             onClick={() => onFilterChange(filter)}
