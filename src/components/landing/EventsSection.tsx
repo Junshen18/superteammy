@@ -12,7 +12,10 @@ const TABS = [
   { id: "upcoming" as const, label: "Upcoming" },
 ] as const;
 
-const EVENT_IMAGES = Array.from({ length: 32 }, (_, i) => `/images/events/${i + 1}.jpeg`);
+const EVENT_IMAGES = Array.from(
+  { length: 32 },
+  (_, i) => `/images/events/${i + 1}.jpeg`,
+);
 
 function formatDate(dateStr: string) {
   const date = new Date(dateStr);
@@ -32,7 +35,8 @@ const PAST_EVENTS_PER_PAGE = 12;
 export function EventsSection({ events }: EventsSectionProps) {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
   const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming");
-  const [pastEventsToShow, setPastEventsToShow] = useState(PAST_EVENTS_PER_PAGE);
+  const [pastEventsToShow, setPastEventsToShow] =
+    useState(PAST_EVENTS_PER_PAGE);
   const pastEvents = events.filter((e) => !e.is_upcoming);
   const displayedPastEvents = pastEvents.slice(0, pastEventsToShow);
   const hasMorePastEvents = pastEventsToShow < pastEvents.length;
@@ -63,29 +67,34 @@ export function EventsSection({ events }: EventsSectionProps) {
         </div>
 
         {/* Title - absolute overlay on top */}
-        <div className="absolute inset-x-0 top-20 pt-12 md:pt-16 px-6 flex flex-col items-center z-10 pointer-events-none">
-        <div className="overflow-hidden" style={{ lineHeight: 1.25 }}>
-              <motion.span
-                className="block text-center will-change-transform"
-                style={{ lineHeight: 1.25 }}
-                initial={{ y: 60 }}
-                animate={inView ? { y: 0 } : { y: 60 }}
-                transition={{
-                  duration: 0.9,
-                  ease: [0.77, 0, 0.175, 1],
-                }}
-              >
-            <h2
-              className="font-[family-name:var(--font-orbitron)] text-3xl md:text-4xl lg:text-5xl xl:text-7xl font-black text-white uppercase"
-              style={{
-                textShadow: "0 0 2px rgba(255,255,255,0.8), 0 0 4px rgba(255,255,255,0.4)",
-                WebkitTextStroke: "1px rgba(255,255,255,0.3)",
+        <div className="absolute flex justify-between inset-x-0 h-full top-20 pt-12 pb-32 md:pt-16 px-6 flex-col items-center z-10 pointer-events-none">
+          <div className="overflow-hidden" style={{ lineHeight: 1.25 }}>
+            <motion.span
+              className="block text-center will-change-transform"
+              style={{ lineHeight: 1.25 }}
+              initial={{ y: 60 }}
+              animate={inView ? { y: 0 } : { y: 60 }}
+              transition={{
+                duration: 0.9,
+                ease: [0.77, 0, 0.175, 1],
               }}
             >
-              Our Events
-            </h2>
+              <h2
+                className="font-[family-name:var(--font-orbitron)] text-3xl md:text-4xl lg:text-5xl xl:text-7xl font-black text-white uppercase"
+                style={{
+                  textShadow:
+                    "0 0 2px rgba(255,255,255,0.8), 0 0 4px rgba(255,255,255,0.4)",
+                  WebkitTextStroke: "1px rgba(255,255,255,0.3)",
+                }}
+              >
+                Our Events
+              </h2>
             </motion.span>
           </div>
+          <p className="text-[16px] text-white/90 max-w-3xl mx-auto">
+            Bringing the community together through meetups, workshops,
+            hackathons, and builder gatherings.
+          </p>
         </div>
       </div>
 
@@ -98,9 +107,7 @@ export function EventsSection({ events }: EventsSectionProps) {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="flex justify-center mb-4"
         >
-          <div
-            className="relative grid grid-cols-2 min-w-[220px] rounded-xl bg-white/6 border border-white/10 p-1 shadow-lg"
-          >
+          <div className="relative grid grid-cols-2 min-w-[220px] rounded-xl bg-white/6 border border-white/10 p-1 shadow-lg">
             {TABS.map((tab) => (
               <button
                 key={tab.id}
@@ -121,7 +128,9 @@ export function EventsSection({ events }: EventsSectionProps) {
                     }}
                   />
                 )}
-                <span className="relative z-10 font-[family-name:var(--font-orbitron)]">{tab.label}</span>
+                <span className="relative z-10 font-[family-name:var(--font-orbitron)]">
+                  {tab.label}
+                </span>
               </button>
             ))}
           </div>
@@ -136,25 +145,51 @@ export function EventsSection({ events }: EventsSectionProps) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
-              className="flex justify-center "
+              className="flex justify-center"
             >
-              <div className="flex flex-col items-center justify-center max-w-[540px] w-full">
-                <div className="w-full mb-4 ">
-                  <iframe
-                    src="https://lu.ma/embed/calendar/cal-sZfiZHfUS5piycU/events?lt=dark"
-                    width="540"
-                    height="800"
-                    frameBorder="0"
-                    allowFullScreen
-                    className="w-full min-h-[700px] rounded"
-                    style={{
-                      border: "0px solid rgba(191, 203, 218, 0.53)",
-                      borderRadius: "4px",
-                    }}
-                    title="Superteam Malaysia Events on Luma"
-                  />
+              <div className="w-full max-w-6xl flex flex-col gap-4">
+                {/* Side-by-side: image left, Luma iframe right */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 items-stretch">
+                  {/* Left: Kuala Lumpur illustration */}
+                  <div className="rounded-xl overflow-hidden shadow-lg shrink-0 relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="/images/event-sec.jpg"
+                      alt="Kuala Lumpur cityscape with traditional shophouses and modern skyscrapers"
+                      className="w-full h-full min-h-[400px] object-cover object-center"
+                    />
+                    <p className="absolute bottom-2 text-center w-full text-sm text-white/90 max-w-3xl mx-auto">
+                      Illustration from{" "}
+                      <a
+                        href="https://www.flickr.com/photos/lokamade/52351916901/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-white/90 hover:text-white hover:underline"
+                      >
+                        Loka Made Gallery
+                      </a>
+                    </p>
+                  </div>
+                  {/* Right: Luma iframe */}
+                  <div className="flex flex-col rounded-xl overflow-hidden shadow-lg bg-black/20">
+                    <div className="flex-1 min-h-0">
+                      <iframe
+                        src="https://lu.ma/embed/calendar/cal-sZfiZHfUS5piycU/events?lt=dark"
+                        width="100%"
+                        height="800"
+                        frameBorder="0"
+                        allowFullScreen
+                        className="w-full min-h-[700px] rounded-xl"
+                        style={{
+                          border: "0px solid rgba(191, 203, 218, 0.53)",
+                          borderRadius: "12px",
+                        }}
+                        title="Superteam Malaysia Events on Luma"
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div className="text-center">
+                <div className="items-center flex w-full justify-center">
                   <a
                     href="https://lu.ma/superteammy"
                     target="_blank"
@@ -186,43 +221,45 @@ export function EventsSection({ events }: EventsSectionProps) {
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 {displayedPastEvents.map((event) => (
-                    <a
-                      key={event.id}
-                      href={event.luma_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-4 p-4 rounded-xl bg-surface/30 border border-white/5 hover:border-white/10 transition-all group overflow-hidden"
-                    >
-                      <div className="w-20 h-20 rounded-lg shrink-0 overflow-hidden bg-white/5">
-                        {event.image_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={event.image_url}
-                            alt=""
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Calendar className="w-8 h-8 text-muted-dark" />
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-white truncate group-hover:text-solana-purple transition-colors">
-                          {event.title}
-                        </p>
-                        <p className="text-xs text-muted-dark">
-                          {formatDate(event.date)} &middot; {event.location}
-                        </p>
-                      </div>
-                    </a>
+                  <a
+                    key={event.id}
+                    href={event.luma_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-4 p-4 rounded-xl bg-surface/30 border border-white/5 hover:border-white/10 transition-all group overflow-hidden"
+                  >
+                    <div className="w-20 h-20 rounded-lg shrink-0 overflow-hidden bg-white/5">
+                      {event.image_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={event.image_url}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Calendar className="w-8 h-8 text-muted-dark" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-white truncate group-hover:text-solana-purple transition-colors">
+                        {event.title}
+                      </p>
+                      <p className="text-xs text-muted-dark">
+                        {formatDate(event.date)} &middot; {event.location}
+                      </p>
+                    </div>
+                  </a>
                 ))}
               </div>
               {hasMorePastEvents && (
                 <div className="flex justify-center">
                   <button
                     type="button"
-                    onClick={() => setPastEventsToShow((n) => n + PAST_EVENTS_PER_PAGE)}
+                    onClick={() =>
+                      setPastEventsToShow((n) => n + PAST_EVENTS_PER_PAGE)
+                    }
                     className="group relative overflow-hidden inline-flex items-center justify-center min-h-[40px] px-4 py-2 rounded-[8px] bg-[#20211B]/20 border border-white/10 font-[family-name:var(--font-orbitron)] font-medium text-sm transition-colors duration-300 hover:border-white cursor-pointer"
                   >
                     <span
@@ -230,7 +267,7 @@ export function EventsSection({ events }: EventsSectionProps) {
                       aria-hidden
                     />
                     <span className="relative z-10 pointer-events-none transition-colors duration-300 text-white/80 group-hover:text-black">
-                      View more
+                      View More
                     </span>
                   </button>
                 </div>
@@ -238,8 +275,6 @@ export function EventsSection({ events }: EventsSectionProps) {
             </motion.div>
           )}
         </AnimatePresence>
-
-
       </div>
     </section>
   );
