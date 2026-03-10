@@ -87,7 +87,7 @@ export default function InvitePage() {
     });
 
     if (loginErr) {
-      setFormError("Account created but login failed. Please go to /admin and log in.");
+      setFormError("Account created but login failed. Please go to /dashboard and log in.");
       setIsSubmitting(false);
       return;
     }

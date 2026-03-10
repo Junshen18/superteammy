@@ -57,7 +57,7 @@ export default function OnboardingPage() {
   async function checkAuth() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      router.push("/admin");
+      router.push("/dashboard");
       return;
     }
 
