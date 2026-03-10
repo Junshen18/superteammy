@@ -29,6 +29,7 @@ export interface Profile {
   real_name: string;
   avatar_url: string;
   bio: string;
+  member_number?: number | null;
   twitter_url: string;
   github_url: string;
   linkedin_url: string;
