@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Search, MoreVertical, Shield, Eye, Trash2, ExternalLink, Mail } from "lucide-react";
+import { Search, MoreVertical, Shield, Eye, Trash2, ExternalLink, Mail, Pencil } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import type { Profile, UserRole } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -42,6 +42,7 @@ export function AdminMembersClient({ initialProfiles, userRole = "member" }: Adm
   const [roleChangeTarget, setRoleChangeTarget] = useState<{ id: string; nickname: string; currentRole: UserRole } | null>(null);
   const [newRole, setNewRole] = useState<UserRole>("member");
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; nickname: string } | null>(null);
+  const [editMember, setEditMember] = useState<{ profile: Profile; memberNumber: string } | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [toastExiting, setToastExiting] = useState(false);
 
@@ -116,6 +117,31 @@ export function AdminMembersClient({ initialProfiles, userRole = "member" }: Adm
     setDeleteConfirm(null);
   }
 
+  async function handleUpdateMemberNumber() {
+    if (!editMember) return;
+    const num = editMember.memberNumber.trim() ? parseInt(editMember.memberNumber, 10) : null;
+    if (editMember.memberNumber.trim() && (num === null || isNaN(num) || num < 1)) {
+      setToast({ message: "Member number must be a positive integer", type: "error" });
+      return;
+    }
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({ member_number: num })
+      .eq("id", editMember.profile.id);
+
+    if (error) {
+      setToast({ message: error.message || "Failed to update member number", type: "error" });
+      return;
+    }
+
+    setProfiles(profiles.map((p) =>
+      p.id === editMember.profile.id ? { ...p, member_number: num } : p
+    ));
+    setToast({ message: "Member number updated", type: "success" });
+    setEditMember(null);
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
@@ -127,7 +153,7 @@ export function AdminMembersClient({ initialProfiles, userRole = "member" }: Adm
         </div>
         {userRole === "super_admin" && (
           <Button asChild className="cursor-pointer">
-            <a href="/admin/invites">
+            <a href="/dashboard/invites">
               <Mail className="w-4 h-4 mr-2" /> Generate Invite
             </a>
           </Button>
@@ -169,6 +195,7 @@ export function AdminMembersClient({ initialProfiles, userRole = "member" }: Adm
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-white/5">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider">#</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider">Member</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider">Roles</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider">Skills</th>
@@ -180,6 +207,9 @@ export function AdminMembersClient({ initialProfiles, userRole = "member" }: Adm
               <tbody>
                 {filteredProfiles.map((profile) => (
                   <tr key={profile.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                    <td className="px-6 py-4 text-muted-foreground text-sm">
+                      {profile.member_number != null ? `#${String(profile.member_number).padStart(3, "0")}` : "—"}
+                    </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-solana-purple to-solana-green p-0.5 flex-shrink-0">
@@ -254,6 +284,17 @@ export function AdminMembersClient({ initialProfiles, userRole = "member" }: Adm
                           >
                             <Eye className="w-4 h-4" /> View Details
                           </DropdownMenuItem>
+                          {userRole === "super_admin" && (
+                            <DropdownMenuItem
+                              onClick={() => setEditMember({
+                                profile,
+                                memberNumber: profile.member_number != null ? String(profile.member_number) : "",
+                              })}
+                              className="cursor-pointer text-white/60 focus:bg-[#171717] focus:text-white/60"
+                            >
+                              <Pencil className="w-4 h-4" /> Edit Member
+                            </DropdownMenuItem>
+                          )}
                           <DropdownMenuItem
                             onClick={() => {
                               setRoleChangeTarget({ id: profile.id, nickname: profile.nickname || profile.real_name || "Member", currentRole: profile.user_role });
@@ -303,9 +344,16 @@ export function AdminMembersClient({ initialProfiles, userRole = "member" }: Adm
                 <div>
                   <p className="text-white font-semibold">{viewProfile.nickname}</p>
                   <p className="text-muted-foreground">{viewProfile.real_name}</p>
-                  <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium capitalize", roleColors[viewProfile.user_role])}>
-                    {viewProfile.user_role.replace("_", " ")}
-                  </span>
+                  <div className="flex items-center gap-2 mt-1">
+                    {viewProfile.member_number != null && (
+                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-white/10 text-white">
+                        #{String(viewProfile.member_number).padStart(3, "0")}
+                      </span>
+                    )}
+                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium capitalize", roleColors[viewProfile.user_role])}>
+                      {viewProfile.user_role.replace("_", " ")}
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -350,6 +398,21 @@ export function AdminMembersClient({ initialProfiles, userRole = "member" }: Adm
               )}
 
               <div className="grid grid-cols-2 gap-3">
+                {viewProfile.linkedin_url && (
+                  <a href={viewProfile.linkedin_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-primary hover:underline">
+                    <ExternalLink className="w-3 h-3" /> LinkedIn
+                  </a>
+                )}
+                {viewProfile.telegram_url && (
+                  <a href={viewProfile.telegram_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-primary hover:underline">
+                    <ExternalLink className="w-3 h-3" /> Telegram
+                  </a>
+                )}
+                {viewProfile.website_url && (
+                  <a href={viewProfile.website_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-primary hover:underline">
+                    <ExternalLink className="w-3 h-3" /> Portfolio
+                  </a>
+                )}
                 {viewProfile.twitter_url && (
                   <a href={viewProfile.twitter_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-primary hover:underline">
                     <ExternalLink className="w-3 h-3" /> Twitter
@@ -358,16 +421,6 @@ export function AdminMembersClient({ initialProfiles, userRole = "member" }: Adm
                 {viewProfile.github_url && (
                   <a href={viewProfile.github_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-primary hover:underline">
                     <ExternalLink className="w-3 h-3" /> GitHub
-                  </a>
-                )}
-                {viewProfile.linkedin_url && (
-                  <a href={viewProfile.linkedin_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-primary hover:underline">
-                    <ExternalLink className="w-3 h-3" /> LinkedIn
-                  </a>
-                )}
-                {viewProfile.website_url && (
-                  <a href={viewProfile.website_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-primary hover:underline">
-                    <ExternalLink className="w-3 h-3" /> Website
                   </a>
                 )}
               </div>
@@ -413,6 +466,33 @@ export function AdminMembersClient({ initialProfiles, userRole = "member" }: Adm
               Cancel
             </Button>
             <Button onClick={handleRoleChange} className="cursor-pointer">Update Role</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Member (member_number) */}
+      <Dialog open={!!editMember} onOpenChange={(open) => !open && setEditMember(null)}>
+        <DialogContent className="max-w-md bg-[#080B0E] border-border/50 text-foreground [&_button]:cursor-pointer">
+          <DialogHeader>
+            <DialogTitle>Edit Member: {editMember?.profile.nickname || editMember?.profile.real_name || "Member"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Label>Member Number</Label>
+            <Input
+              type="number"
+              min={1}
+              placeholder="e.g. 1 for #001"
+              value={editMember?.memberNumber ?? ""}
+              onChange={(e) => setEditMember(editMember ? { ...editMember, memberNumber: e.target.value } : null)}
+              className="bg-[#171717] border-border/50 cursor-text"
+            />
+            <p className="text-xs text-muted-foreground">Leave empty to remove. Displayed as #001, #002, etc.</p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditMember(null)} className="cursor-pointer bg-[#080B0E] border-border/50 hover:bg-[#171717] hover:text-white">
+              Cancel
+            </Button>
+            <Button onClick={handleUpdateMemberNumber} className="cursor-pointer">Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

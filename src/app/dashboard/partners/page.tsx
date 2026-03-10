@@ -1,7 +1,7 @@
 import { getPartners } from "@/lib/supabase/queries";
-import { AdminPartnersClient } from "./AdminPartnersClient";
+import { AdminPartnersClient } from "@/app/admin/partners/AdminPartnersClient";
 
-export default async function AdminPartnersPage() {
+export default async function DashboardPartnersPage() {
   const partners = await getPartners();
   return <AdminPartnersClient initialPartners={partners} />;
 }

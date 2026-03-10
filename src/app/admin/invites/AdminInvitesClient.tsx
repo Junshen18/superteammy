@@ -282,22 +282,26 @@ export function AdminInvitesClient() {
             <div className="space-y-2">
               <Label>Role</Label>
               <div className="flex gap-2">
-                {(["member", "admin"] as const).map((role) => (
-                  <button
-                    key={role}
-                    type="button"
-                    onClick={() => setFormData({ ...formData, invited_role: role })}
-                    className={cn(
-                      "flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer border",
-                      formData.invited_role === role
-                        ? "bg-primary/10 text-primary border-primary/30"
-                        : "bg-[#171717] border-white/10 text-white/90 hover:bg-white/10 hover:text-white hover:border-white/20"
-                    )}
-                  >
-                    <Shield className="w-4 h-4" />
-                    <span className="capitalize">{role}</span>
-                  </button>
-                ))}
+                {(["member", "admin"] as const).map((role) => {
+                  const isSelected = formData.invited_role === role;
+                  return (
+                    <button
+                      key={role}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, invited_role: role })}
+                      className={cn(
+                        "flex flex-1 items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer border-2",
+                        isSelected
+                          ? "bg-white/10 text-white border-white ring-2 ring-white/30"
+                          : "bg-[#171717] border-white/10 text-muted-foreground hover:bg-white/5 hover:text-white hover:border-white/20"
+                      )}
+                    >
+                      <Shield className={cn("w-4 h-4", isSelected ? "text-white" : "text-muted-foreground")} />
+                      <span className="capitalize">{role}</span>
+                      {isSelected && <Check className="w-4 h-4 text-white ml-auto" />}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -305,12 +309,12 @@ export function AdminInvitesClient() {
             <Button
               variant="outline"
               onClick={() => setIsModalOpen(false)}
-              className="cursor-pointer bg-[#080B0E] border-white/10 hover:bg-[#171717] hover:text-white"
+              className="cursor-pointer bg-background border-white/10 hover:bg-[#171717] hover:text-white hover:border-white/20"
             >
               Cancel
             </Button>
-            <Button onClick={handleCreate} className="cursor-pointer">
-              Generate & Copy Link
+            <Button onClick={handleCreate} className="cursor-pointer bg-background border-white/10  hover:bg-[#171717] hover:text-white hover:border-white/20">
+              Generate & Copy Link  
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -319,7 +323,7 @@ export function AdminInvitesClient() {
       {toast && (
         <div
           className={cn(
-            "fixed left-1/2 top-6 z-50 -translate-x-1/2 rounded-lg border border-white/10 bg-[#080B0E] px-4 py-3 shadow-lg transition-all duration-300",
+            "fixed left-1/2 top-6 z-50 -translate-x-1/2 rounded-lg border border-white/10 bg-background px-4 py-3 shadow-lg transition-all duration-300",
             toastExiting ? "-translate-y-4 opacity-0" : "translate-y-0 opacity-100"
           )}
         >

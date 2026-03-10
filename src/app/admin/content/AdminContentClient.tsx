@@ -22,7 +22,7 @@ const initialContent: ContentSection[] = [
   { key: "cta", label: "Call to Action", title: "Ready to Build with Us?", subtitle: "", description: "Join Superteam Malaysia and be part of the fastest-growing Solana community in Southeast Asia." },
 ];
 
-export default function AdminContentPage() {
+export function AdminContentClient() {
   const [content, setContent] = useState(initialContent);
   const [saved, setSaved] = useState<string | null>(null);
 

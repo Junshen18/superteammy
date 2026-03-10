@@ -9,6 +9,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { MultiSelect, type MultiSelectOption } from "@/components/ui/multi-select";
 import { cn } from "@/lib/utils";
 
@@ -22,6 +30,8 @@ export default function ProfileEditPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [toastExiting, setToastExiting] = useState(false);
+  const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
 
   const [nickname, setNickname] = useState("");
   const [realName, setRealName] = useState("");
@@ -45,6 +55,33 @@ export default function ProfileEditPage() {
   const [selectedSubskills, setSelectedSubskills] = useState<MultiSelectOption[]>([]);
 
   const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const initialRef = useRef<{
+    nickname: string; realName: string; avatarUrl: string; bio: string;
+    twitterUrl: string; githubUrl: string; linkedinUrl: string; websiteUrl: string; telegramUrl: string;
+    achievements: string; talkToMeAbout: string;
+    roleIds: string[]; companyIds: string[]; skillIds: string[]; subskillIds: string[];
+  } | null>(null);
+
+  function selectedIdsEqual(selected: MultiSelectOption[], initialIds: string[]) {
+    if (selected.length !== initialIds.length) return false;
+    const set = new Set(initialIds);
+    return selected.every((x) => set.has(x.id));
+  }
+
+  const hasUnsavedChanges = (() => {
+    const init = initialRef.current;
+    if (!init || isLoading) return false;
+    return (
+      nickname !== init.nickname || realName !== init.realName || avatarUrl !== init.avatarUrl ||
+      bio !== init.bio || twitterUrl !== init.twitterUrl || githubUrl !== init.githubUrl ||
+      linkedinUrl !== init.linkedinUrl || websiteUrl !== init.websiteUrl || telegramUrl !== init.telegramUrl ||
+      achievements !== init.achievements || talkToMeAbout !== init.talkToMeAbout ||
+      !selectedIdsEqual(selectedRoles, init.roleIds) ||
+      !selectedIdsEqual(selectedCompanies, init.companyIds) ||
+      !selectedIdsEqual(selectedSkills, init.skillIds) ||
+      !selectedIdsEqual(selectedSubskills, init.subskillIds)
+    );
+  })();
 
   useEffect(() => {
     if (!toast) return;
@@ -66,9 +103,37 @@ export default function ProfileEditPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (!hasUnsavedChanges) return;
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [hasUnsavedChanges]);
+
+  useEffect(() => {
+    if (!hasUnsavedChanges) return;
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const anchor = target.closest('a[href]');
+      if (anchor) {
+        const href = anchor.getAttribute("href");
+        if (href && href.startsWith("/") && href !== "/dashboard/profile") {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          setPendingHref(href);
+          setLeaveDialogOpen(true);
+        }
+      }
+    };
+    document.addEventListener("click", handleClick, true);
+    return () => document.removeEventListener("click", handleClick, true);
+  }, [hasUnsavedChanges]);
+
   async function loadProfile() {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { router.push("/admin"); return; }
+    if (!user) { router.push("/dashboard"); return; }
     setUserId(user.id);
 
     const [profileRes, rolesRes, companiesRes, skillsRes, subskillsRes] = await Promise.all([
@@ -107,10 +172,34 @@ export default function ProfileEditPage() {
       supabase.from("profile_subskills").select("subskill_id, subskills:subskill_id(id, name)").eq("profile_id", user.id),
     ]);
 
-    if (prRes.data) setSelectedRoles(prRes.data.map((r: Record<string, unknown>) => r.roles as MultiSelectOption).filter(Boolean));
-    if (pcRes.data) setSelectedCompanies(pcRes.data.map((r: Record<string, unknown>) => r.companies as MultiSelectOption).filter(Boolean));
-    if (psRes.data) setSelectedSkills(psRes.data.map((r: Record<string, unknown>) => r.skills as MultiSelectOption).filter(Boolean));
-    if (pssRes.data) setSelectedSubskills(pssRes.data.map((r: Record<string, unknown>) => r.subskills as MultiSelectOption).filter(Boolean));
+    const roles = prRes.data?.map((r: Record<string, unknown>) => r.roles as MultiSelectOption).filter(Boolean) ?? [];
+    const companies = pcRes.data?.map((r: Record<string, unknown>) => r.companies as MultiSelectOption).filter(Boolean) ?? [];
+    const skills = psRes.data?.map((r: Record<string, unknown>) => r.skills as MultiSelectOption).filter(Boolean) ?? [];
+    const subskills = pssRes.data?.map((r: Record<string, unknown>) => r.subskills as MultiSelectOption).filter(Boolean) ?? [];
+
+    if (prRes.data) setSelectedRoles(roles);
+    if (pcRes.data) setSelectedCompanies(companies);
+    if (psRes.data) setSelectedSkills(skills);
+    if (pssRes.data) setSelectedSubskills(subskills);
+
+    const p = profileRes.data ?? {};
+    initialRef.current = {
+      nickname: (p.nickname as string) || "",
+      realName: (p.real_name as string) || "",
+      avatarUrl: (p.avatar_url as string) || "",
+      bio: (p.bio as string) || "",
+      twitterUrl: (p.twitter_url as string) || "",
+      githubUrl: (p.github_url as string) || "",
+      linkedinUrl: (p.linkedin_url as string) || "",
+      websiteUrl: (p.website_url as string) || "",
+      telegramUrl: (p.telegram_url as string) || "",
+      achievements: (p.achievements as string) || "",
+      talkToMeAbout: (p.talk_to_me_about as string) || "",
+      roleIds: roles.map((r) => r.id),
+      companyIds: companies.map((c) => c.id),
+      skillIds: skills.map((s) => s.id),
+      subskillIds: subskills.map((s) => s.id),
+    };
 
     setIsLoading(false);
   }
@@ -170,6 +259,15 @@ export default function ProfileEditPage() {
 
     setToast({ message: "Profile saved!", type: "success" });
     setIsSaving(false);
+    initialRef.current = {
+      nickname, realName, avatarUrl, bio,
+      twitterUrl, githubUrl, linkedinUrl, websiteUrl, telegramUrl,
+      achievements, talkToMeAbout,
+      roleIds: selectedRoles.map((r) => r.id),
+      companyIds: selectedCompanies.map((c) => c.id),
+      skillIds: selectedSkills.map((s) => s.id),
+      subskillIds: selectedSubskills.map((s) => s.id),
+    };
   }
 
   async function saveJunction(table: string, foreignKey: string, items: MultiSelectOption[]) {
@@ -190,16 +288,19 @@ export default function ProfileEditPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold">Edit Profile</h1>
-          <p className="text-sm text-muted-foreground mt-1">Update your community profile</p>
-        </div>
-        <Button onClick={handleSave} disabled={isSaving} className="cursor-pointer">
-          {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-          {isSaving ? "Saving..." : "Save Changes"}
-        </Button>
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold">Edit Profile</h1>
+        <p className="text-sm text-muted-foreground mt-1">Update your community profile</p>
       </div>
+
+      <Button
+        onClick={handleSave}
+        disabled={isSaving}
+        className="fixed bottom-6 right-6 z-50 cursor-pointer shadow-lg"
+      >
+        {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+        {isSaving ? "Saving..." : "Save Changes"}
+      </Button>
 
       <div className="space-y-6">
         <Card className="bg-[#080B0E] border-border/50">
@@ -312,6 +413,42 @@ export default function ProfileEditPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={leaveDialogOpen} onOpenChange={(open) => { setLeaveDialogOpen(open); if (!open) setPendingHref(null); }}>
+        <DialogContent showCloseButton={false} className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Unsaved changes</DialogTitle>
+            <DialogDescription>
+              You have unsaved changes. Are you sure you want to leave? Your changes may not be saved.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter showCloseButton={false} className="flex gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => {
+                if (pendingHref) router.push(pendingHref);
+                setLeaveDialogOpen(false);
+                setPendingHref(null);
+              }}
+              className="cursor-pointer mr-2"
+            >
+              Leave
+            </Button>
+            <Button
+              onClick={async () => {
+                await handleSave();
+                setLeaveDialogOpen(false);
+                if (pendingHref) router.push(pendingHref);
+                setPendingHref(null);
+              }}
+              disabled={isSaving}
+              className="cursor-pointer"
+            >
+              {isSaving ? "Saving..." : "Save changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {toast && (
         <div className={cn("fixed left-1/2 top-6 z-50 -translate-x-1/2 rounded-lg border border-white/10 bg-[#080B0E] px-4 py-3 shadow-lg transition-all duration-300", toastExiting ? "-translate-y-4 opacity-0" : "translate-y-0 opacity-100")}>
