@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { ProfileCard } from "@/components/members/ProfileCard";
+import { MemberProfileCard } from "@/components/members/MemberProfileCard";
 import { MemberFilters } from "@/components/members/MemberFilters";
 import type { Profile, LookupTag } from "@/lib/types";
 
@@ -87,9 +87,9 @@ export function MembersPageClient({ profiles, availableSkills }: MembersPageClie
         </motion.p>
 
         {filteredProfiles.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center">
             {filteredProfiles.map((profile, index) => (
-              <ProfileCard key={profile.id} profile={profile} index={index} />
+              <MemberProfileCard key={profile.id} profile={profile} index={index} />
             ))}
           </div>
         ) : (
