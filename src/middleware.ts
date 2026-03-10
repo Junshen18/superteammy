@@ -34,37 +34,37 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  // Protected routes: /admin, /dashboard, /onboarding
+  // Redirect /admin to /dashboard
   if (pathname.startsWith('/admin')) {
+    const newPath = pathname.replace(/^\/admin/, '/dashboard');
+    return NextResponse.redirect(new URL(newPath || '/dashboard', request.url));
+  }
+
+  // Protected routes: /dashboard, /onboarding
+  if (pathname.startsWith('/dashboard')) {
     if (!user) {
-      // Let the client-side layout handle the login form
       return response;
     }
 
     const userRole = (user.app_metadata?.user_role as string) || 'member';
 
     // Super admin-only routes
-    if (pathname.startsWith('/admin/members') || pathname.startsWith('/admin/invites')) {
+    if (pathname.startsWith('/dashboard/members') || pathname.startsWith('/dashboard/invites')) {
       if (userRole !== 'super_admin') {
-        return NextResponse.redirect(new URL('/admin', request.url));
+        return NextResponse.redirect(new URL('/dashboard', request.url));
       }
     }
 
     // General admin routes require admin or super_admin
-    if (userRole !== 'super_admin' && userRole !== 'admin') {
+    const adminPaths = ['/dashboard/events', '/dashboard/partners', '/dashboard/content'];
+    if (adminPaths.some((p) => pathname.startsWith(p)) && userRole !== 'super_admin' && userRole !== 'admin') {
       return NextResponse.redirect(new URL('/dashboard', request.url));
-    }
-  }
-
-  if (pathname.startsWith('/dashboard')) {
-    if (!user) {
-      return NextResponse.redirect(new URL('/admin', request.url));
     }
   }
 
   if (pathname === '/onboarding') {
     if (!user) {
-      return NextResponse.redirect(new URL('/admin', request.url));
+      return NextResponse.redirect(new URL('/dashboard', request.url));
     }
   }
 
