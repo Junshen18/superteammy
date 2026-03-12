@@ -46,6 +46,8 @@ export default async function Home() {
         <WallOfLove testimonials={testimonials} />
         <hr className="border-white/20 w-full mx-auto my-0" />
         <FAQSection faqs={faqs} />
+        <hr className="border-white/20 w-full mx-auto my-0" />
+
       </div>
     </>
   );

@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useInView } from "react-intersection-observer";
 import { ArrowRight } from "lucide-react";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import type { Partner } from "@/lib/types";
@@ -11,20 +10,15 @@ interface PartnersSectionProps {
 }
 
 export function PartnersSection({ partners }: PartnersSectionProps) {
-  const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.2 });
-
   return (
-    <section id="ecosystem" className="py-24 md:py-32 bg-[#0D0D20]">
+    <section id="ecosystem" className="py-24 md:py-32 bg-background">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <SectionHeading
           title="ECOSYSTEM PARTNERS"
           subtitle="Partners that support the Malaysian builder ecosystem through tools, mentorship, and opportunities."
         />
 
-        <div
-          ref={ref}
-          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6 mt-16"
-        >
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6 mt-16">
           {partners.map((partner, index) => (
             <motion.a
               key={partner.id}
@@ -32,15 +26,16 @@ export function PartnersSection({ partners }: PartnersSectionProps) {
               target="_blank"
               rel="noopener noreferrer"
               initial={{ opacity: 0, scale: 0.9 }}
-              animate={inView ? { opacity: 1, scale: 1 } : {}}
-              transition={{ duration: 0.4, delay: index * 0.05 }}
-              className="group flex items-center justify-center p-4 rounded-2xl bg-white/6 border border-white/10 hover:border-white/20 hover:bg-white/8 transition-all duration-300 overflow-hidden"
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.5, delay: index * 0.05 }}
+              className="group flex items-center justify-center h-[100px] p-4 rounded-[8px] bg-[#222222] border border-white/10 hover:border-white/20 hover:brightness-110 transition-all duration-300 overflow-hidden"
             >
               {partner.logo_url ? (
                 <img
                   src={partner.logo_url}
                   alt=""
-                  className="w-full h-full max-w-[80%] max-h-[80%] object-contain"
+                  className="w-full h-full max-w-[80%] max-h-[100%] object-contain"
                 />
               ) : (
                 <span className="text-2xl font-bold text-white/40 group-hover:text-white/60 transition-colors">

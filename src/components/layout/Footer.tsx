@@ -96,7 +96,7 @@ export function Footer() {
             <div className="absolute inset-0 overflow-hidden">
               <div
                 ref={footerBgRef}
-                className="absolute inset-0 w-full h-full will-change-transform"
+                className="absolute inset-0 w-full h-[105%] will-change-transform"
               >
                 <Image
                   src="/images/footer-bg.png"
