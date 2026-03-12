@@ -132,6 +132,48 @@ body {
   background: #9945FF;
 }
 
+/* Hide scrollbar for carousel / horizontal scroll areas */
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Marquee carousel: 2 rows, auto-loop, pause on hover */
+.marquee-row {
+  overflow: visible;
+  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  overflow: visible;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.marquee-ltr {
+  animation-name: marquee-ltr;
+  animation-duration: 18s;
+}
+.marquee-rtl {
+  animation-name: marquee-rtl;
+  animation-duration: 18s;
+}
+.group:hover .marquee-track {
+  animation-play-state: paused;
+}
+@keyframes marquee-ltr {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes marquee-rtl {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);

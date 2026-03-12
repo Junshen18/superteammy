@@ -56,7 +56,7 @@ export async function middleware(request: NextRequest) {
     }
 
     // General admin routes require admin or super_admin
-    const adminPaths = ['/dashboard/events', '/dashboard/partners', '/dashboard/content'];
+    const adminPaths = ['/dashboard/events', '/dashboard/partners', '/dashboard/content', '/dashboard/manage-perks'];
     if (adminPaths.some((p) => pathname.startsWith(p)) && userRole !== 'super_admin' && userRole !== 'admin') {
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
