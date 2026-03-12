@@ -2,6 +2,7 @@
 
 import { LoadingProvider, useLoading } from "@/contexts/LoadingContext";
 import { HeroLogoRefProvider } from "@/contexts/HeroLogoRefContext";
+import { LenisProvider } from "@/contexts/LenisContext";
 import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import { SmoothScroll } from "@/components/ui/SmoothScroll";
 
@@ -9,7 +10,7 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
   const { loading, setLoading } = useLoading();
 
   return (
-    <>
+    <LenisProvider>
       <LoadingScreen onComplete={() => setLoading(false)} />
       <SmoothScroll enabled={!loading}>
         <div
@@ -22,7 +23,7 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
           {children}
         </div>
       </SmoothScroll>
-    </>
+    </LenisProvider>
   );
 }
 

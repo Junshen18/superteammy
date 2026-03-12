@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import Lenis from "lenis";
+import { useLenisRef } from "@/contexts/LenisContext";
 
 interface SmoothScrollProps {
   children: React.ReactNode;
@@ -9,12 +10,12 @@ interface SmoothScrollProps {
 }
 
 export function SmoothScroll({ children, enabled = true }: SmoothScrollProps) {
-  const lenisRef = useRef<Lenis | null>(null);
+  const lenisRef = useLenisRef();
 
   useEffect(() => {
-    if (!enabled) {
-      lenisRef.current?.destroy();
-      lenisRef.current = null;
+    if (!lenisRef || !enabled) {
+      lenisRef?.current?.destroy();
+      if (lenisRef) lenisRef.current = null;
       return;
     }
 
@@ -38,7 +39,7 @@ export function SmoothScroll({ children, enabled = true }: SmoothScrollProps) {
       lenis.destroy();
       lenisRef.current = null;
     };
-  }, [enabled]);
+  }, [enabled, lenisRef]);
 
   return <>{children}</>;
 }
