@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Search, MoreVertical, Shield, Eye, Trash2, ExternalLink, Mail, Pencil, Award } from "lucide-react";
+import { Search, MoreVertical, Shield, Eye, UserX, UserCheck, ExternalLink, Mail, Pencil, Award } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import type { Profile, UserRole } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -39,11 +39,11 @@ const MEMBER_BADGES = ["Bounty Hunter", "Hackathon Winner", "Solana Builder", "C
 export function AdminMembersClient({ initialProfiles, userRole = "member" }: AdminMembersClientProps) {
   const [profiles, setProfiles] = useState<Profile[]>(initialProfiles);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "onboarded" | "pending">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "onboarded" | "pending" | "deactivated">("all");
   const [viewProfile, setViewProfile] = useState<Profile | null>(null);
   const [roleChangeTarget, setRoleChangeTarget] = useState<{ id: string; nickname: string; currentRole: UserRole } | null>(null);
   const [newRole, setNewRole] = useState<UserRole>("member");
-  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; nickname: string } | null>(null);
+  const [deactivateConfirm, setDeactivateConfirm] = useState<{ id: string; nickname: string } | null>(null);
   const [editMember, setEditMember] = useState<{ profile: Profile; memberNumber: string; badges: string[] } | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [toastExiting, setToastExiting] = useState(false);
@@ -71,10 +71,12 @@ export function AdminMembersClient({ initialProfiles, userRole = "member" }: Adm
       (p.nickname || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
       (p.real_name || "").toLowerCase().includes(searchQuery.toLowerCase());
 
+    const isDeactivated = p.is_active === false;
     const matchesStatus =
       statusFilter === "all" ||
-      (statusFilter === "onboarded" && p.onboarding_completed) ||
-      (statusFilter === "pending" && !p.onboarding_completed);
+      (statusFilter === "onboarded" && p.onboarding_completed && !isDeactivated) ||
+      (statusFilter === "pending" && !p.onboarding_completed && !isDeactivated) ||
+      (statusFilter === "deactivated" && isDeactivated);
 
     return matchesSearch && matchesStatus;
   });
@@ -100,23 +102,43 @@ export function AdminMembersClient({ initialProfiles, userRole = "member" }: Adm
     setRoleChangeTarget(null);
   }
 
-  async function handleDelete() {
-    if (!deleteConfirm) return;
+  async function handleDeactivate() {
+    if (!deactivateConfirm) return;
 
-    const res = await fetch("/api/admin/delete-user", {
+    const res = await fetch("/api/admin/deactivate-user", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: deleteConfirm.id }),
+      body: JSON.stringify({ userId: deactivateConfirm.id }),
     });
 
     if (res.ok) {
-      setProfiles(profiles.filter((p) => p.id !== deleteConfirm.id));
-      setToast({ message: "Member deleted", type: "success" });
+      setProfiles(profiles.map((p) =>
+        p.id === deactivateConfirm.id ? { ...p, is_active: false } : p
+      ));
+      setToast({ message: "Member deactivated", type: "success" });
     } else {
       const data = await res.json();
-      setToast({ message: data.error || "Failed to delete member", type: "error" });
+      setToast({ message: data.error || "Failed to deactivate member", type: "error" });
     }
-    setDeleteConfirm(null);
+    setDeactivateConfirm(null);
+  }
+
+  async function handleReactivate(id: string) {
+    const res = await fetch("/api/admin/reactivate-user", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: id }),
+    });
+
+    if (res.ok) {
+      setProfiles(profiles.map((p) =>
+        p.id === id ? { ...p, is_active: true } : p
+      ));
+      setToast({ message: "Member reactivated", type: "success" });
+    } else {
+      const data = await res.json();
+      setToast({ message: data.error || "Failed to reactivate member", type: "error" });
+    }
   }
 
   async function handleUpdateMember() {
@@ -173,7 +195,7 @@ export function AdminMembersClient({ initialProfiles, userRole = "member" }: Adm
           />
         </div>
         <div className="flex gap-2">
-          {(["all", "onboarded", "pending"] as const).map((status) => (
+          {(["all", "onboarded", "pending", "deactivated"] as const).map((status) => (
             <Button
               key={status}
               variant={statusFilter === status ? "default" : "outline"}
@@ -253,7 +275,11 @@ export function AdminMembersClient({ initialProfiles, userRole = "member" }: Adm
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      {profile.onboarding_completed ? (
+                      {profile.is_active === false ? (
+                        <span className="px-2 py-0.5 rounded-full bg-red-500/10 text-red-500 text-xs">
+                          Deactivated
+                        </span>
+                      ) : profile.onboarding_completed ? (
                         <span className="px-2 py-0.5 rounded-full bg-green-500/10 text-green-500 text-xs">
                           Active
                         </span>
@@ -298,12 +324,22 @@ export function AdminMembersClient({ initialProfiles, userRole = "member" }: Adm
                           >
                             <Shield className="w-4 h-4" /> Change Role
                           </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => setDeleteConfirm({ id: profile.id, nickname: profile.nickname || profile.real_name || "Member" })}
-                            className="cursor-pointer text-white/60 focus:bg-[#171717] focus:text-white/60 [&_svg]:text-red-500"
-                          >
-                            <Trash2 className="w-4 h-4" /> Delete
-                          </DropdownMenuItem>
+                          {userRole === "super_admin" &&
+                            (profile.is_active === false ? (
+                              <DropdownMenuItem
+                                onClick={() => handleReactivate(profile.id)}
+                                className="cursor-pointer text-white/60 focus:bg-[#171717] focus:text-white/60 [&_svg]:text-green-500"
+                              >
+                                <UserCheck className="w-4 h-4" /> Reactivate
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem
+                                onClick={() => setDeactivateConfirm({ id: profile.id, nickname: profile.nickname || profile.real_name || "Member" })}
+                                className="cursor-pointer text-white/60 focus:bg-[#171717] focus:text-white/60 [&_svg]:text-red-500"
+                              >
+                                <UserX className="w-4 h-4" /> Deactivate
+                              </DropdownMenuItem>
+                            ))}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </td>
@@ -387,27 +423,27 @@ export function AdminMembersClient({ initialProfiles, userRole = "member" }: Adm
 
               <div className="grid grid-cols-2 gap-3">
                 {viewProfile.linkedin_url && (
-                  <a href={viewProfile.linkedin_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-primary hover:underline">
+                  <a href={viewProfile.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-white flex items-center gap-1.5 text-xs hover:underline">
                     <ExternalLink className="w-3 h-3" /> LinkedIn
                   </a>
                 )}
                 {viewProfile.telegram_url && (
-                  <a href={viewProfile.telegram_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-primary hover:underline">
+                  <a href={viewProfile.telegram_url} target="_blank" rel="noopener noreferrer" className="text-white flex items-center gap-1.5 text-xs hover:underline">
                     <ExternalLink className="w-3 h-3" /> Telegram
                   </a>
                 )}
                 {viewProfile.website_url && (
-                  <a href={viewProfile.website_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-primary hover:underline">
+                  <a href={viewProfile.website_url} target="_blank" rel="noopener noreferrer" className="text-white flex items-center gap-1.5 text-xs hover:underline">
                     <ExternalLink className="w-3 h-3" /> Portfolio
                   </a>
                 )}
                 {viewProfile.twitter_url && (
-                  <a href={viewProfile.twitter_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-primary hover:underline">
+                  <a href={viewProfile.twitter_url} target="_blank" rel="noopener noreferrer" className="text-white flex items-center gap-1.5 text-xs hover:underline">
                     <ExternalLink className="w-3 h-3" /> Twitter
                   </a>
                 )}
                 {viewProfile.github_url && (
-                  <a href={viewProfile.github_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-primary hover:underline">
+                  <a href={viewProfile.github_url} target="_blank" rel="noopener noreferrer" className="text-white flex items-center gap-1.5 text-xs hover:underline">
                     <ExternalLink className="w-3 h-3" /> GitHub
                   </a>
                 )}
@@ -517,21 +553,21 @@ export function AdminMembersClient({ initialProfiles, userRole = "member" }: Adm
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation */}
-      <Dialog open={!!deleteConfirm} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
+      {/* Deactivate Confirmation */}
+      <Dialog open={!!deactivateConfirm} onOpenChange={(open) => !open && setDeactivateConfirm(null)}>
         <DialogContent className="max-w-md bg-[#080B0E] border-white/10 text-foreground">
           <DialogHeader>
-            <DialogTitle>Delete {deleteConfirm?.nickname}?</DialogTitle>
+            <DialogTitle>Deactivate {deactivateConfirm?.nickname}?</DialogTitle>
             <p className="text-sm text-muted-foreground">
-              This will permanently delete the member&apos;s account and profile. This cannot be undone.
+              The member will be deactivated and cannot log in. Their profile will be hidden from the public members list. You can reactivate them later.
             </p>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteConfirm(null)} className="cursor-pointer bg-[#080B0E] border-border/50 hover:bg-[#171717] hover:text-white">
+            <Button variant="outline" onClick={() => setDeactivateConfirm(null)} className="cursor-pointer bg-[#080B0E] border-border/50 hover:bg-[#171717] hover:text-white">
               Cancel
             </Button>
-            <Button onClick={handleDelete} className="cursor-pointer bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete
+            <Button onClick={handleDeactivate} className="cursor-pointer bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Deactivate
             </Button>
           </DialogFooter>
         </DialogContent>
