@@ -8,59 +8,97 @@ Superteam Malaysia is the local chapter of the global Superteam network, dedicat
 
 ### Key Features
 
-- **Landing Page** with 10 distinct sections (Hero, Mission, Stats, Events, Members Spotlight, Partners, Wall of Love, FAQ, CTA, Footer)
-- **Members Directory** with search, skill-based filtering, and animated member cards
-- **Admin Dashboard** for managing all content (Members, Events, Partners, Site Content)
-- **Luma Integration** for event management
-- **Responsive Design** optimized for desktop, tablet, and mobile
-- **Scroll Animations** powered by Framer Motion
-- **SEO Optimized** with metadata, sitemap, and structured data
+- **Landing Page** — Hero with animated logo, Who We Are, Mission (Learn/Build/Grow/Earn), Stats, Events, Members Spotlight, Partners, Wall of Love, FAQ
+- **Members Directory** (`/members`) — Search, skill-based filtering, flip-style member cards with badges (Bounty Hunter, Solana Builder, Hackathon Winner, Core Contributor)
+- **Member Dashboard** (`/dashboard`) — Overview, Profile, Projects, Perks (claim member benefits)
+- **Admin Dashboard** — Members, Events, Partners, Perks, Site Content, Invites (role-based: super_admin, admin)
+- **Luma Integration** — Event sync, ICS support
+- **Invite Flow** — Token-based invite redemption (`/invite/[token]`)
+- **Onboarding** — Onboarding flow for new members
+- **Smooth Scroll** — Lenis + GSAP scroll animations
+- **Loading Screen** — Animated loading experience
+- **SEO** — Metadata, sitemap, structured data
 
 ## Tech Stack
 
 | Technology | Purpose |
-|---|---|
+|------------|---------|
 | **Next.js 16** | React framework with App Router |
+| **React 19** | UI library |
 | **TypeScript** | Type-safe development |
 | **Tailwind CSS v4** | Utility-first styling |
+| **shadcn/ui** | Component library (Radix primitives) |
 | **Framer Motion** | Scroll and interaction animations |
-| **Supabase** | PostgreSQL database, Auth, Storage |
+| **GSAP** | Advanced scroll-triggered animations |
+| **Lenis** | Smooth scrolling |
+| **Supabase** | PostgreSQL, Auth, Storage |
 | **Lucide React** | Icon system |
 | **react-tweet** | Twitter/X embed support |
 | **react-intersection-observer** | Scroll-triggered animations |
 | **next-sitemap** | SEO sitemap generation |
+| **react-hook-form + zod** | Forms and validation |
 
 ## Project Structure
 
 ```
 src/
 ├── app/
-│   ├── layout.tsx          # Root layout with fonts & metadata
-│   ├── page.tsx            # Landing page (10 sections)
-│   ├── members/
-│   │   ├── layout.tsx      # Members page metadata
-│   │   └── page.tsx        # Members directory with search/filter
-│   └── admin/
-│       ├── layout.tsx      # Admin layout with sidebar & auth
-│       ├── page.tsx        # Admin dashboard
-│       ├── members/        # CRUD for members
-│       ├── events/         # CRUD for events
-│       ├── partners/       # CRUD for partners
-│       └── content/        # Edit site content
+│   ├── (site)/                    # Main site
+│   │   ├── layout.tsx             # Navbar + AppShell + Footer
+│   │   ├── page.tsx               # Landing page
+│   │   └── members/
+│   │       ├── layout.tsx
+│   │       └── page.tsx           # Members directory
+│   ├── dashboard/                 # Member + Admin dashboard
+│   │   ├── layout.tsx            # Auth, sidebar, role-based nav
+│   │   ├── page.tsx              # Overview
+│   │   ├── profile/
+│   │   ├── projects/
+│   │   ├── perks/                # Member perks (claim)
+│   │   ├── members/              # Admin: members CRUD
+│   │   ├── events/               # Admin: events CRUD
+│   │   ├── partners/             # Admin: partners CRUD
+│   │   ├── manage-perks/         # Admin: perks CRUD
+│   │   ├── content/              # Admin: site content
+│   │   └── invites/              # Admin: invite management
+│   ├── admin/                    # Admin client components
+│   │   ├── members/AdminMembersClient.tsx
+│   │   ├── events/AdminEventsClient.tsx
+│   │   ├── partners/AdminPartnersClient.tsx
+│   │   ├── perks/AdminPerksClient.tsx
+│   │   ├── content/AdminContentClient.tsx
+│   │   └── invites/AdminInvitesClient.tsx
+│   ├── onboarding/
+│   ├── invite/[token]/           # Invite redemption
+│   ├── api/                     # API routes (invites, sync-luma, admin)
+│   └── layout.tsx               # Root layout, fonts
 ├── components/
-│   ├── layout/             # Navbar, Footer
-│   ├── landing/            # All landing page sections
-│   ├── members/            # MemberCard, MemberFilters
-│   └── ui/                 # SectionHeading, AnimatedCounter, Badge, Accordion
+│   ├── layout/                  # Navbar, Footer, AppShell, ConditionalFooter
+│   ├── landing/                 # HeroSection, WhoWeAreSection, MissionSection, etc.
+│   ├── members/                 # MemberProfileCard, MemberFilters, ProfileCard
+│   └── ui/                      # SectionHeading, Badge, Accordion, LoadingScreen, etc.
+├── contexts/                    # LoadingContext, LenisContext, HeroLogoRefContext
+├── hooks/                       # useScrambleText
 ├── lib/
-│   ├── supabase/           # Supabase client & server utilities
-│   ├── types.ts            # TypeScript interfaces
-│   ├── data.ts             # Sample/seed data
-│   └── luma.ts             # Luma API integration
-└── middleware.ts            # Security headers for admin routes
+│   ├── supabase/                # client, server, queries
+│   ├── types.ts
+│   ├── data.ts                  # Sample data for dev/seed
+│   ├── luma.ts
+│   ├── luma-ics.ts
+│   └── luma-sync.ts
+└── middleware.ts                # Auth, admin route protection
 
 supabase/
-└── schema.sql              # Full database schema with RLS & seed data
+├── schema.sql                   # Base schema (legacy)
+└── migrations/
+    ├── 20250304000000_add_luma_event_id.sql
+    ├── 20250305000000_add_is_archived_to_events.sql
+    ├── 20250306000000_member_management.sql
+    ├── 20250307000000_partner_logos_bucket.sql
+    ├── 20250310000000_add_member_number.sql
+    ├── 20250310000001_auto_assign_member_number.sql
+    ├── 20250310000002_add_member_badges.sql
+    └── 20250312000000_add_perks.sql
 ```
 
 ## Getting Started
@@ -69,66 +107,84 @@ supabase/
 
 - Node.js 18+ (recommended: 20.x)
 - npm
-- A Supabase project (optional for local development)
+- Supabase project (required for full functionality)
 
 ### Installation
 
 ```bash
-# Clone the repository
 git clone <your-repo-url>
 cd superteammy
 
-# Install dependencies
 npm install
-
-# Copy environment variables
 cp .env.example .env.local
 ```
 
 ### Environment Variables
 
-Edit `.env.local` with your values:
+Edit `.env.local`:
 
 ```env
-# Supabase Configuration
+# Supabase (required)
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=sb_publishable_your-key-here
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
-# Luma API (optional)
+# Luma API (optional, for event sync)
 LUMA_API_KEY=your-luma-api-key
 
 # Site URL
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
-> **Note**: The site works with sample data out of the box. Supabase credentials are only required for production use with the CMS.
+### Supabase Setup
 
-### Database Setup (Optional)
+#### 1. Create a Supabase Project
 
-If using Supabase:
+1. Go to [supabase.com/dashboard](https://supabase.com/dashboard)
+2. Create a new project
+3. Note your **Project Reference ID** (Settings → General → Reference ID)
 
-1. Create a new Supabase project at [supabase.com](https://supabase.com)
-2. Go to the SQL Editor
-3. Run the contents of `supabase/schema.sql`
-4. Update your `.env.local` with the project credentials
+#### 2. Apply Migrations
+
+**Option A: Supabase CLI (recommended)**
+
+```bash
+npx supabase login
+npx supabase link --project-ref YOUR_PROJECT_REF
+npx supabase db push
+```
+
+**Option B: Manual SQL**
+
+1. For a **fresh project**, run `supabase/schema.sql` first
+2. In Supabase → SQL Editor, run each migration in order (by timestamp)
+
+#### 3. Seed Data (optional)
+
+```bash
+npm run seed
+```
+
+#### Troubleshooting
+
+| Error | Solution |
+|-------|----------|
+| `Access token not provided` | Run `npx supabase login` |
+| `parse error near '\n'` | Don't use `<>` in project-ref; use ID directly |
+| `policy/trigger/type already exists` | Re-run `npx supabase db push` (migrations use `DROP IF EXISTS`) |
 
 ### Local Development
 
 ```bash
-# Start the development server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3000](http://localhost:3000).
 
-### Building for Production
+### Build
 
 ```bash
-# Build the project
 npm run build
-
-# Start production server
 npm start
 ```
 
@@ -136,89 +192,84 @@ npm start
 
 ### Landing Page (`/`)
 
-A full-featured landing page with 10 sections:
-
-1. **Hero** — Bold gradient headline, CTAs, animated background
-2. **Mission** — 6 pillar cards (Builder Support, Events, Grants, Jobs, Education, Network)
-3. **Stats** — Animated counters for community metrics
-4. **Events** — Upcoming & past events with Luma integration
-5. **Members Spotlight** — Featured member cards with achievements
-6. **Partners** — Logo grid of ecosystem partners
-7. **Wall of Love** — Community testimonials
-8. **FAQ** — Expandable accordion
-9. **Join CTA** — Strong call-to-action with social links
-10. **Footer** — Navigation, social links, branding
+1. **Hero** — Animated logo, gradient headline, CTAs
+2. **Who We Are** — Scroll-reveal text
+3. **Mission** — 4 pillars (Learn, Build, Grow, Earn) with images
+4. **Stats** — Animated counters
+5. **Events** — Upcoming & past events (Luma)
+6. **Members Spotlight** — Featured member cards (marquee-style)
+7. **Partners** — Logo grid
+8. **Wall of Love** — Testimonials
+9. **FAQ** — Accordion
 
 ### Members Page (`/members`)
 
-- Search by name, role, or company
-- Filter by skill tags (Core Team, Rust, Frontend, Design, Content, Growth, Product, Community)
-- Member cards with achievements, skill badges, and Twitter/X links
-- Responsive grid (4→2→1 columns)
+- Search by name, role, company
+- Filter by skills (from Supabase)
+- Member cards with flip interaction, badges, social links
+- Expandable overlay for full profile
 
-### Admin Dashboard (`/admin`)
+### Dashboard (`/dashboard`)
 
-- Protected by Supabase Auth
-- **Members Management** — Add, edit, delete member profiles
-- **Events Management** — Create and manage events
-- **Partners Management** — Manage partner logos and links
-- **Content Editor** — Edit landing page text content
+**Member routes**
+
+- Overview — Quick stats, links
+- My Profile — Edit profile
+- Projects — Proof of work
+- Perks — Claim member perks (ETHGlobal-style layout)
+
+**Admin routes** (super_admin / admin)
+
+- Members — Manage profiles
+- Events — CRUD events
+- Partners — Manage logos
+- Perks — Add/edit perks
+- Site Content — Edit landing copy
+- Invites — Super admin only
+
+### Invite Flow (`/invite/[token]`)
+
+Token-based invite redemption for new members.
 
 ## Design System
 
 ### Color Palette
 
 | Color | Hex | Usage |
-|---|---|---|
-| Solana Purple | `#9945FF` | Primary accent, CTAs |
-| Solana Green | `#14F195` | Secondary accent, icons |
-| Background | `#0A0A1A` | Page background |
-| Surface | `#1A1A2E` | Card backgrounds |
-| Muted | `#A0A0B0` | Secondary text |
+|-------|-----|-------|
+| Background | `#080B0E` | Page background |
+| Solana Purple | `#9945FF` | Primary accent |
+| Solana Green | `#14F195` | Secondary accent |
 | Gold | `#F0C040` | Achievement highlights |
+| Muted | `#A0A0B0` | Secondary text |
 
 ### Typography
 
-- **Headings**: Space Grotesk (bold, modern Web3 feel)
-- **Body**: Inter (clean readability)
+- **Sans**: Archivo
+- **Display**: Orbitron
 
 ## Deployment
 
-### Vercel (Recommended)
+### Vercel
 
 ```bash
-# Install Vercel CLI
 npm i -g vercel
-
-# Deploy
 vercel
 ```
 
-Or connect your GitHub repository to [Vercel](https://vercel.com) for automatic deployments.
-
-### Environment Variables on Vercel
-
-Add all variables from `.env.example` to your Vercel project settings.
+Or connect your repo to [Vercel](https://vercel.com). Add all env vars from `.env.example`.
 
 ## CMS Architecture
 
-The website uses a lightweight CMS architecture:
-
-- **Supabase** as the backend database
-- **Admin Dashboard** at `/admin` for content management
-- **Role-based access** via Supabase Auth
-- **Sample data** included for development without Supabase
-
-Admins can:
-- Add, edit, and delete member profiles
-- Manage events with Luma URLs
-- Update partner logos and ecosystem projects
-- Edit landing page content (titles, descriptions, CTAs)
+- **Supabase** — Database, Auth, Storage
+- **Dashboard** — `/dashboard` for content management
+- **Roles** — `super_admin`, `admin`, `member` (via Supabase Auth + profiles)
+- **Storage buckets** — `avatars`, `partner-logos`, `event-covers`, `perk-icons`
 
 ## Contributing
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Commit your changes (`git commit -m 'Add amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
@@ -229,7 +280,8 @@ This project is built for the Superteam Malaysia community.
 
 ## Acknowledgments
 
-- [Superteam Global](https://superteam.fun) — The global Superteam network
-- [Solana Foundation](https://solana.com) — The Solana ecosystem
-- [Superteam UAE](https://uae.superteam.fun) — Design inspiration
-- [Superteam Germany](https://de.superteam.fun) — Design inspiration
+- [Superteam Global](https://superteam.fun)
+- [Solana Foundation](https://solana.com)
+- [Superteam UAE](https://uae.superteam.fun)
+- [Superteam Germany](https://de.superteam.fun)
+- [ETHGlobal Packs](https://ethglobal.com/packs/builder) — Perks layout inspiration
