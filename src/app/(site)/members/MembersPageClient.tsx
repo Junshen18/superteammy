@@ -42,21 +42,23 @@ export function MembersPageClient({ profiles, availableSkills }: MembersPageClie
   }, [profiles, searchQuery, activeFilter]);
 
   return (
-    <div className="min-h-screen pt-28 pb-24">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+    <div className="relative min-h-screen pt-28 pb-24">
+      {/* Fixed background - does not scroll with content */}
+      <div
+        className="fixed inset-0 -z-10 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: "url('/images/member-bg.png')" }}
+      />
+      <div className="relative max-w-7xl mx-auto px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 1 }}
           className="text-center mb-12"
         >
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-solana-purple mb-4">
-            Our Community
-          </p>
           <h1 className="font-[family-name:var(--font-orbitron)] text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
             Member Directory
           </h1>
-          <p className="text-lg text-muted max-w-2xl mx-auto">
+          <p className="text-lg text-muted max-w-xl mx-auto">
             Discover the talented builders, creators, and founders driving the
             Solana ecosystem in Malaysia
           </p>
@@ -77,19 +79,19 @@ export function MembersPageClient({ profiles, availableSkills }: MembersPageClie
           />
         </motion.div>
 
-        <motion.p
+        {/* <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3, delay: 0.2 }}
-          className="text-sm text-muted-dark mb-6"
+          className="text-sm text-muted-dark mb-6 text-center"
         >
           Showing {filteredProfiles.length} member{filteredProfiles.length !== 1 ? "s" : ""}
-        </motion.p>
+        </motion.p> */}
 
         {filteredProfiles.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center">
             {filteredProfiles.map((profile, index) => (
-              <MemberProfileCard key={profile.id} profile={profile} index={index} />
+              <MemberProfileCard key={profile.id} profile={profile} index={index} expandOnClick />
             ))}
           </div>
         ) : (

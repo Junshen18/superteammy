@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Search, MoreVertical, Shield, Eye, Trash2, ExternalLink, Mail, Pencil } from "lucide-react";
+import { Search, MoreVertical, Shield, Eye, Trash2, ExternalLink, Mail, Pencil, Award } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import type { Profile, UserRole } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,8 @@ const roleColors: Record<UserRole, string> = {
   member: "bg-green-500/10 text-green-500",
 };
 
+const MEMBER_BADGES = ["Bounty Hunter", "Hackathon Winner", "Solana Builder", "Core Contributor"] as const;
+
 export function AdminMembersClient({ initialProfiles, userRole = "member" }: AdminMembersClientProps) {
   const [profiles, setProfiles] = useState<Profile[]>(initialProfiles);
   const [searchQuery, setSearchQuery] = useState("");
@@ -42,7 +44,7 @@ export function AdminMembersClient({ initialProfiles, userRole = "member" }: Adm
   const [roleChangeTarget, setRoleChangeTarget] = useState<{ id: string; nickname: string; currentRole: UserRole } | null>(null);
   const [newRole, setNewRole] = useState<UserRole>("member");
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; nickname: string } | null>(null);
-  const [editMember, setEditMember] = useState<{ profile: Profile; memberNumber: string } | null>(null);
+  const [editMember, setEditMember] = useState<{ profile: Profile; memberNumber: string; badges: string[] } | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [toastExiting, setToastExiting] = useState(false);
 
@@ -117,7 +119,7 @@ export function AdminMembersClient({ initialProfiles, userRole = "member" }: Adm
     setDeleteConfirm(null);
   }
 
-  async function handleUpdateMemberNumber() {
+  async function handleUpdateMember() {
     if (!editMember) return;
     const num = editMember.memberNumber.trim() ? parseInt(editMember.memberNumber, 10) : null;
     if (editMember.memberNumber.trim() && (num === null || isNaN(num) || num < 1)) {
@@ -127,18 +129,18 @@ export function AdminMembersClient({ initialProfiles, userRole = "member" }: Adm
 
     const { error } = await supabase
       .from("profiles")
-      .update({ member_number: num })
+      .update({ member_number: num, badges: editMember.badges })
       .eq("id", editMember.profile.id);
 
     if (error) {
-      setToast({ message: error.message || "Failed to update member number", type: "error" });
+      setToast({ message: error.message || "Failed to update member", type: "error" });
       return;
     }
 
     setProfiles(profiles.map((p) =>
-      p.id === editMember.profile.id ? { ...p, member_number: num } : p
+      p.id === editMember.profile.id ? { ...p, member_number: num, badges: editMember.badges } : p
     ));
-    setToast({ message: "Member number updated", type: "success" });
+    setToast({ message: "Member updated", type: "success" });
     setEditMember(null);
   }
 
@@ -197,8 +199,7 @@ export function AdminMembersClient({ initialProfiles, userRole = "member" }: Adm
                 <tr className="border-b border-white/5">
                   <th className="px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider">#</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider">Member</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider">Roles</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider">Skills</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider">Badges</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider">System Role</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider">Status</th>
                   <th className="px-6 py-4 text-right text-xs font-semibold text-muted uppercase tracking-wider">Actions</th>
@@ -233,24 +234,16 @@ export function AdminMembersClient({ initialProfiles, userRole = "member" }: Adm
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-wrap gap-1">
-                        {(profile.roles || []).map((r) => (
-                          <span key={r.id} className="px-2 py-0.5 rounded-full bg-white/5 text-xs text-muted">
-                            {r.name}
+                        {(profile.badges || []).map((b) => (
+                          <span
+                            key={b}
+                            className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 text-xs"
+                          >
+                            {b}
                           </span>
                         ))}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-1">
-                        {(profile.skills || []).slice(0, 3).map((s) => (
-                          <span key={s.id} className="px-2 py-0.5 rounded-full bg-white/5 text-xs text-muted">
-                            {s.name}
-                          </span>
-                        ))}
-                        {(profile.skills || []).length > 3 && (
-                          <span className="px-2 py-0.5 rounded-full bg-white/5 text-xs text-muted">
-                            +{profile.skills!.length - 3}
-                          </span>
+                        {(profile.badges || []).length === 0 && (
+                          <span className="text-muted-foreground text-xs">—</span>
                         )}
                       </div>
                     </td>
@@ -284,11 +277,12 @@ export function AdminMembersClient({ initialProfiles, userRole = "member" }: Adm
                           >
                             <Eye className="w-4 h-4" /> View Details
                           </DropdownMenuItem>
-                          {userRole === "super_admin" && (
+                          {(userRole === "super_admin" || userRole === "admin") && (
                             <DropdownMenuItem
                               onClick={() => setEditMember({
                                 profile,
                                 memberNumber: profile.member_number != null ? String(profile.member_number) : "",
+                                badges: profile.badges || [],
                               })}
                               className="cursor-pointer text-white/60 focus:bg-[#171717] focus:text-white/60"
                             >
@@ -364,12 +358,17 @@ export function AdminMembersClient({ initialProfiles, userRole = "member" }: Adm
                 </div>
               )}
 
-              {(viewProfile.roles || []).length > 0 && (
+              {(viewProfile.badges || []).length > 0 && (
                 <div>
-                  <p className="text-muted-foreground mb-1">Roles</p>
+                  <p className="text-muted-foreground mb-1">Badges</p>
                   <div className="flex flex-wrap gap-1">
-                    {viewProfile.roles!.map((r) => (
-                      <span key={r.id} className="px-2 py-0.5 rounded-full bg-white/5 text-xs text-white">{r.name}</span>
+                    {viewProfile.badges!.map((b) => (
+                      <span
+                        key={b}
+                        className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 text-xs"
+                      >
+                        {b}
+                      </span>
                     ))}
                   </div>
                 </div>
@@ -381,17 +380,6 @@ export function AdminMembersClient({ initialProfiles, userRole = "member" }: Adm
                   <div className="flex flex-wrap gap-1">
                     {viewProfile.companies!.map((c) => (
                       <span key={c.id} className="px-2 py-0.5 rounded-full bg-white/5 text-xs text-white">{c.name}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {(viewProfile.skills || []).length > 0 && (
-                <div>
-                  <p className="text-muted-foreground mb-1">Skills</p>
-                  <div className="flex flex-wrap gap-1">
-                    {viewProfile.skills!.map((s) => (
-                      <span key={s.id} className="px-2 py-0.5 rounded-full bg-white/5 text-xs text-white">{s.name}</span>
                     ))}
                   </div>
                 </div>
@@ -470,29 +458,61 @@ export function AdminMembersClient({ initialProfiles, userRole = "member" }: Adm
         </DialogContent>
       </Dialog>
 
-      {/* Edit Member (member_number) */}
+      {/* Edit Member (member_number + badges) */}
       <Dialog open={!!editMember} onOpenChange={(open) => !open && setEditMember(null)}>
         <DialogContent className="max-w-md bg-[#080B0E] border-border/50 text-foreground [&_button]:cursor-pointer">
           <DialogHeader>
             <DialogTitle>Edit Member: {editMember?.profile.nickname || editMember?.profile.real_name || "Member"}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-3">
-            <Label>Member Number</Label>
-            <Input
-              type="number"
-              min={1}
-              placeholder="e.g. 1 for #001"
-              value={editMember?.memberNumber ?? ""}
-              onChange={(e) => setEditMember(editMember ? { ...editMember, memberNumber: e.target.value } : null)}
-              className="bg-[#171717] border-border/50 cursor-text"
-            />
-            <p className="text-xs text-muted-foreground">Leave empty to remove. Displayed as #001, #002, etc.</p>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Member Number</Label>
+              <Input
+                type="number"
+                min={1}
+                placeholder="e.g. 1 for #001"
+                value={editMember?.memberNumber ?? ""}
+                onChange={(e) => setEditMember(editMember ? { ...editMember, memberNumber: e.target.value } : null)}
+                className="bg-[#171717] border-border/50 cursor-text"
+              />
+              <p className="text-xs text-muted-foreground">Leave empty to remove. Displayed as #001, #002, etc.</p>
+            </div>
+            <div className="space-y-2">
+              <Label>Badges</Label>
+              <div className="flex flex-wrap gap-2">
+                {MEMBER_BADGES.map((badge) => {
+                  const isSelected = (editMember?.badges ?? []).includes(badge);
+                  return (
+                    <button
+                      key={badge}
+                      type="button"
+                      onClick={() => {
+                        if (!editMember) return;
+                        const next = isSelected
+                          ? editMember.badges.filter((b) => b !== badge)
+                          : [...editMember.badges, badge];
+                        setEditMember({ ...editMember, badges: next });
+                      }}
+                      className={cn(
+                        "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer border",
+                        isSelected
+                          ? "bg-amber-500/20 text-amber-500 border-amber-500/10"
+                          : "bg-[#171717] text-muted-foreground border-border/50 hover:text-white hover:border-white/20"
+                      )}
+                    >
+                      <Award className="w-4 h-4" />
+                      {badge}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditMember(null)} className="cursor-pointer bg-[#080B0E] border-border/50 hover:bg-[#171717] hover:text-white">
               Cancel
             </Button>
-            <Button onClick={handleUpdateMemberNumber} className="cursor-pointer">Save</Button>
+            <Button onClick={handleUpdateMember} className="cursor-pointer">Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
