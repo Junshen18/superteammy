@@ -10,7 +10,7 @@ import { FAQSection } from "@/components/landing/FAQSection";
 import {
   getStats,
   getEvents,
-  getFeaturedProfiles,
+  getProfiles,
   getPartners,
   getTestimonials,
   getFAQs,
@@ -21,7 +21,7 @@ export default async function Home() {
     await Promise.all([
       getStats(),
       getEvents(),
-      getFeaturedProfiles(),
+      getProfiles(),
       getPartners(),
       getTestimonials(),
       getFAQs(),
@@ -32,12 +32,19 @@ export default async function Home() {
       <HeroSection />
       <div className="relative z-10 bg-background">
         <WhoWeAreSection />
+        <hr className="border-white/20 w-full mx-auto my-0" />
         <MissionSection />
+        <hr className="border-white/20 w-full mx-auto my-0" />
         <StatsSection stats={stats} />
+        <hr className="border-white/20 w-full mx-auto my-0" />
         <EventsSection events={events} />
+        <hr className="border-white/20 w-full mx-auto my-0" />
         <MembersSpotlight profiles={profiles} />
+        <hr className="border-white/20 w-full mx-auto my-0" />
         <PartnersSection partners={partners} />
+        <hr className="border-white/20 w-full mx-auto my-0" />
         <WallOfLove testimonials={testimonials} />
+        <hr className="border-white/20 w-full mx-auto my-0" />
         <FAQSection faqs={faqs} />
       </div>
     </>

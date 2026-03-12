@@ -189,9 +189,10 @@ export function EventsSection({ events }: EventsSectionProps) {
                     </div>
                   </div>
                 </div>
+
                 <div className="items-center flex w-full justify-center">
                   <a
-                    href="https://lu.ma/superteammy"
+                    href="https://luma.com/mysuperteam"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group relative overflow-hidden inline-flex items-center justify-center gap-2 min-h-[40px] px-4 py-2 rounded-[8px] bg-[#20211B]/20 border border-white/10 font-[family-name:var(--font-orbitron)] font-medium text-sm transition-colors duration-300 hover:border-white cursor-pointer"
@@ -217,61 +218,73 @@ export function EventsSection({ events }: EventsSectionProps) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
-              className="mb-12"
+              className="mb-12 flex flex-col gap-4"
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                {displayedPastEvents.map((event) => (
-                  <a
-                    key={event.id}
-                    href={event.luma_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-4 p-4 rounded-xl bg-surface/30 border border-white/5 hover:border-white/10 transition-all group overflow-hidden"
-                  >
-                    <div className="w-20 h-20 rounded-lg shrink-0 overflow-hidden bg-white/5">
-                      {event.image_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={event.image_url}
-                          alt=""
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Calendar className="w-8 h-8 text-muted-dark" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-white truncate group-hover:text-solana-purple transition-colors">
-                        {event.title}
-                      </p>
-                      <p className="text-xs text-muted-dark">
-                        {formatDate(event.date)} &middot; {event.location}
-                      </p>
-                    </div>
-                  </a>
-                ))}
-              </div>
-              {hasMorePastEvents && (
-                <div className="flex justify-center">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setPastEventsToShow((n) => n + PAST_EVENTS_PER_PAGE)
-                    }
-                    className="group relative overflow-hidden inline-flex items-center justify-center min-h-[40px] px-4 py-2 rounded-[8px] bg-[#20211B]/20 border border-white/10 font-[family-name:var(--font-orbitron)] font-medium text-sm transition-colors duration-300 hover:border-white cursor-pointer"
-                  >
-                    <span
-                      className="absolute inset-0 z-0 origin-left scale-x-0 bg-white transition-transform duration-300 ease-out group-hover:scale-x-100"
-                      aria-hidden
-                    />
-                    <span className="relative z-10 pointer-events-none transition-colors duration-300 text-white/80 group-hover:text-black">
-                      View More
-                    </span>
-                  </button>
+              <div className="relative">
+                <div
+                  className="max-h-[800px] overflow-y-auto overscroll-contain rounded-xl pr-1 scrollbar-hide"
+                  data-lenis-prevent
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-1">
+                  {displayedPastEvents.map((event) => (
+                    <a
+                      key={event.id}
+                      href={event.luma_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-4 p-4 rounded-xl bg-surface/30 border border-white/5 hover:border-white/10 transition-all group overflow-hidden"
+                    >
+                      <div className="w-20 h-20 rounded-lg shrink-0 overflow-hidden bg-white/5">
+                        {event.image_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={event.image_url}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Calendar className="w-8 h-8 text-muted-dark" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-white truncate group-hover:text-solana-purple transition-colors">
+                          {event.title}
+                        </p>
+                        <p className="text-xs text-muted-dark">
+                          {formatDate(event.date)} &middot; {event.location}
+                        </p>
+                      </div>
+                    </a>
+                  ))}
+                  </div>
                 </div>
-              )}
+                <div
+                  className="absolute bottom-0 left-0 right-0 h-[30%] pointer-events-none rounded-b-xl"
+                  style={{
+                    background: "linear-gradient(to top, #080B0E 0%, transparent 100%)",
+                  }}
+                  aria-hidden
+                />
+              </div>
+              <div className="items-center flex w-full justify-center">
+                <a
+                  href="https://luma.com/mysuperteam"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group relative overflow-hidden inline-flex items-center justify-center gap-2 min-h-[40px] px-4 py-2 rounded-[8px] bg-[#20211B]/20 border border-white/10 font-[family-name:var(--font-orbitron)] font-medium text-sm transition-colors duration-300 hover:border-white cursor-pointer"
+                >
+                  <span
+                    className="absolute inset-0 z-0 origin-left scale-x-0 bg-white transition-transform duration-300 ease-out group-hover:scale-x-100"
+                    aria-hidden
+                  />
+                  <span className="relative z-10 flex items-center gap-2 pointer-events-none transition-colors duration-300 text-white group-hover:text-black">
+                    View All Events on Luma
+                    <ArrowUpRight className="w-4 h-4" />
+                  </span>
+                </a>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
