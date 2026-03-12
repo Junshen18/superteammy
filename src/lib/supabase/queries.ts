@@ -1,5 +1,5 @@
 import { createServerClient } from "./server";
-import type { Member, Event, Partner, Stat, Testimonial, FAQ, Profile, Invite, LookupTag, SubskillTag, Project } from "../types";
+import type { Member, Event, Partner, Stat, Testimonial, FAQ, Profile, Invite, LookupTag, SubskillTag, Project, Perk } from "../types";
 
 export async function getMembers(): Promise<Member[]> {
   const supabase = await createServerClient();
@@ -107,7 +107,7 @@ export async function getProfiles(): Promise<Profile[]> {
     .from("profiles")
     .select("*")
     .eq("onboarding_completed", true)
-    .order("display_order", { ascending: true });
+    .order("member_number", { ascending: true, nullsFirst: false });
 
   if (error) {
     console.error("Failed to fetch profiles:", error.message);
@@ -242,6 +242,20 @@ export async function getSubskills(): Promise<SubskillTag[]> {
     return [];
   }
   return data as SubskillTag[];
+}
+
+export async function getPerks(): Promise<Perk[]> {
+  const supabase = await createServerClient();
+  const { data, error } = await supabase
+    .from("perks")
+    .select("*")
+    .order("display_order", { ascending: true });
+
+  if (error) {
+    console.error("Failed to fetch perks:", error.message);
+    return [];
+  }
+  return data as Perk[];
 }
 
 export async function getProfileProjects(profileId: string): Promise<Project[]> {

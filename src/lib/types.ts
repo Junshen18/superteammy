@@ -30,6 +30,7 @@ export interface Profile {
   avatar_url: string;
   bio: string;
   member_number?: number | null;
+  badges?: string[];
   twitter_url: string;
   github_url: string;
   linkedin_url: string;
@@ -141,4 +142,17 @@ export interface SiteContent {
   cta_text: string;
   cta_url: string;
   image_url: string;
+}
+
+export interface Perk {
+  id: string;
+  title: string;
+  description: string;
+  value_badge: string;
+  icon_url: string;
+  redeem_url: string;
+  redeem_label: string;
+  is_limited: boolean;
+  display_order: number;
+  created_at: string;
 }
