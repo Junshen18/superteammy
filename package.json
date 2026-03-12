@@ -9,9 +9,13 @@
     "postbuild": "next-sitemap",
     "start": "next start",
     "lint": "eslint",
-    "seed": "tsx scripts/seed.ts"
+    "seed": "tsx scripts/seed.ts",
+    "seed:dashboard": "tsx scripts/seed-dashboard.ts"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@hookform/resolvers": "^5.2.2",
     "@supabase/ssr": "^0.9.0",
     "@supabase/supabase-js": "^2.95.3",
@@ -31,8 +35,10 @@
     "react-day-picker": "^9.14.0",
     "react-dom": "19.2.3",
     "react-hook-form": "^7.71.2",
+    "react-image-crop": "^11.0.10",
     "react-intersection-observer": "^10.0.2",
     "react-tweet": "^3.3.0",
+    "recharts": "^3.8.0",
     "tailwind-merge": "^3.5.0",
     "zod": "^4.3.6"
   },
