@@ -107,6 +107,7 @@ export async function getProfiles(): Promise<Profile[]> {
     .from("profiles")
     .select("*")
     .eq("onboarding_completed", true)
+    .or("is_active.is.null,is_active.eq.true")
     .order("member_number", { ascending: true, nullsFirst: false });
 
   if (error) {
@@ -141,6 +142,7 @@ export async function getFeaturedProfiles(): Promise<Profile[]> {
     .select("*")
     .eq("is_featured", true)
     .eq("onboarding_completed", true)
+    .or("is_active.is.null,is_active.eq.true")
     .order("display_order", { ascending: true });
 
   if (error) {

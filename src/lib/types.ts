@@ -41,6 +41,7 @@ export interface Profile {
   is_featured: boolean;
   display_order: number;
   onboarding_completed: boolean;
+  is_active?: boolean;
   created_at: string;
   roles?: LookupTag[];
   companies?: LookupTag[];
