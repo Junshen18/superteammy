@@ -96,6 +96,7 @@ export interface Event {
   image_url: string;
   is_upcoming: boolean;
   is_archived?: boolean;
+  attendee_count?: number | null;
   created_at: string;
 }
 
