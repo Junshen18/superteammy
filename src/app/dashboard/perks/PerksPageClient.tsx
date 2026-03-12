@@ -97,7 +97,7 @@ function PerkCard({ perk }: { perk: Perk }) {
       <div className="p-5 flex flex-col h-full">
         {/* Top row: Icon + Value badge (top right) */}
         <div className="flex items-start justify-between gap-2 mb-4">
-          <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden shrink-0">
+          <div className="w-12 h-12 rounded-md flex items-center justify-center overflow-hidden shrink-0">
             {perk.icon_url ? (
               <img
                 src={perk.icon_url}
