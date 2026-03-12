@@ -149,8 +149,8 @@ export interface Perk {
   title: string;
   description: string;
   value_badge: string;
-  icon_url: string;
-  redeem_url: string;
+  icon_url: string | null;
+  redeem_url: string | null;
   redeem_label: string;
   is_limited: boolean;
   display_order: number;

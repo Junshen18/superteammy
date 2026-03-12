@@ -19,32 +19,6 @@ export function PerksPageClient({ perks }: PerksPageClientProps) {
         </p>
       </div>
 
-      {/* What's in the Pack? */}
-      <section className="mb-16">
-        <h2 className="text-xl font-semibold mb-6">What&apos;s in the Pack?</h2>
-
-        {perks.length === 0 ? (
-          <div className="rounded-xl border border-border/50 bg-card/50 p-12 flex flex-col items-center gap-4 text-center">
-            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-              <Gift className="w-8 h-8 text-primary" />
-            </div>
-            <div>
-              <p className="text-lg font-semibold text-white mb-1">Coming Soon</p>
-              <p className="text-sm text-muted-foreground max-w-sm">
-                We&apos;re working on exclusive perks for community members including event tickets,
-                merchandise, and partner benefits. Stay tuned!
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {perks.map((perk) => (
-              <PerkCard key={perk.id} perk={perk} />
-            ))}
-          </div>
-        )}
-      </section>
-
       {/* What is a Pack? - ETHGlobal-style 3-column explainer */}
       <section className="rounded-xl border border-border/50 bg-card/30 p-8 md:p-10">
         <h2 className="text-xl font-semibold mb-8">What is a Pack?</h2>
@@ -82,6 +56,34 @@ export function PerksPageClient({ perks }: PerksPageClientProps) {
           </div>
         </div>
       </section>
+
+      {/* What's in the Pack? */}
+      <section className="mt-16">
+        <h2 className="text-xl font-semibold mb-6">What&apos;s in the Pack?</h2>
+
+        {perks.length === 0 ? (
+          <div className="rounded-xl border border-border/50 bg-card/50 p-12 flex flex-col items-center gap-4 text-center">
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+              <Gift className="w-8 h-8 text-primary" />
+            </div>
+            <div>
+              <p className="text-lg font-semibold text-white mb-1">Coming Soon</p>
+              <p className="text-sm text-muted-foreground max-w-sm">
+                We&apos;re working on exclusive perks for community members including event tickets,
+                merchandise, and partner benefits. Stay tuned!
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2  gap-4">
+            {perks.map((perk) => (
+              <PerkCard key={perk.id} perk={perk} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      
     </div>
   );
 }
@@ -91,19 +93,33 @@ function PerkCard({ perk }: { perk: Perk }) {
   const hasRedeemUrl = !!perk.redeem_url?.trim();
 
   return (
-    <div className="rounded-xl border border-border/50 bg-card/50 overflow-hidden hover:border-primary/30 transition-colors group">
+    <div className="rounded-xl border border-border/50 bg-card/50 overflow-hidden hover:border-primary/30 transition-colors group relative">
       <div className="p-5 flex flex-col h-full">
-        {/* Icon */}
-        <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden mb-4 shrink-0">
-          {perk.icon_url ? (
-            <img
-              src={perk.icon_url}
-              alt=""
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <Gift className="w-6 h-6 text-muted-foreground" />
-          )}
+        {/* Top row: Icon + Value badge (top right) */}
+        <div className="flex items-start justify-between gap-2 mb-4">
+          <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden shrink-0">
+            {perk.icon_url ? (
+              <img
+                src={perk.icon_url}
+                alt=""
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <Gift className="w-6 h-6 text-muted-foreground" />
+            )}
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            {perk.value_badge && (
+              <span className="px-2 py-0.5 rounded text-xs font-medium bg-primary/10 text-primary">
+                {perk.value_badge}
+              </span>
+            )}
+            {perk.is_limited && (
+              <span className="px-2 py-0.5 rounded text-xs font-medium bg-amber-500/10 text-amber-500">
+                Limited
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Title */}
@@ -111,24 +127,10 @@ function PerkCard({ perk }: { perk: Perk }) {
 
         {/* Description */}
         {perk.description && (
-          <p className="text-sm text-muted-foreground mb-3 flex-1 line-clamp-3">
+          <p className="text-sm text-muted-foreground mb-4 flex-1 line-clamp-3">
             {perk.description}
           </p>
         )}
-
-        {/* Value badge + Limited tag */}
-        <div className="flex flex-wrap items-center gap-2 mb-4">
-          {perk.value_badge && (
-            <span className="px-2 py-0.5 rounded text-xs font-medium bg-primary/10 text-primary">
-              {perk.value_badge}
-            </span>
-          )}
-          {perk.is_limited && (
-            <span className="px-2 py-0.5 rounded text-xs font-medium bg-amber-500/10 text-amber-500">
-              Limited
-            </span>
-          )}
-        </div>
 
         {/* Redeem button */}
         {hasRedeemUrl ? (
@@ -139,7 +141,7 @@ function PerkCard({ perk }: { perk: Perk }) {
             className="w-full cursor-pointer group-hover:bg-primary/90"
           >
             <a
-              href={perk.redeem_url}
+              href={perk.redeem_url ?? "#"}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2"
