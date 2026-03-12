@@ -40,12 +40,14 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger on INSERT (e.g. bootstrap, direct profile creation with onboarding done)
+DROP TRIGGER IF EXISTS trigger_assign_member_number_insert ON profiles;
 CREATE TRIGGER trigger_assign_member_number_insert
   BEFORE INSERT ON profiles
   FOR EACH ROW
   EXECUTE FUNCTION assign_member_number();
 
 -- Trigger on UPDATE (e.g. user completes onboarding)
+DROP TRIGGER IF EXISTS trigger_assign_member_number_update ON profiles;
 CREATE TRIGGER trigger_assign_member_number_update
   BEFORE UPDATE ON profiles
   FOR EACH ROW
