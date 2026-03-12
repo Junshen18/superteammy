@@ -24,6 +24,11 @@ export function SmoothScroll({ children, enabled = true }: SmoothScrollProps) {
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       touchMultiplier: 2,
       infinite: false,
+      allowNestedScroll: true,
+      prevent: (node) =>
+        node instanceof HTMLElement &&
+        (node.hasAttribute("data-lenis-prevent") ||
+          !!node.closest("[data-lenis-prevent]")),
     });
 
     lenisRef.current = lenis;
