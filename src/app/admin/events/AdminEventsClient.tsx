@@ -42,6 +42,15 @@ function formatDateLabel(d: Date) {
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 }
 
+/** Event is past if its date (start of day) is before today (start of day) */
+function isEventPast(dateStr: string): boolean {
+  const eventDate = new Date(dateStr);
+  const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+  const today = new Date();
+  const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  return eventDay < todayStart;
+}
+
 interface AdminEventsClientProps {
   initialEvents: Event[];
 }
@@ -79,6 +88,19 @@ export function AdminEventsClient({ initialEvents }: AdminEventsClientProps) {
     fetchSyncStatus();
   }, []);
 
+  // Sync past events in DB when admin loads page (keeps is_upcoming in sync)
+  useEffect(() => {
+    fetch("/api/events-sync-past", { method: "POST" })
+      .then((r) => r.ok && r.json())
+      .then(async (data) => {
+        if (data?.updated > 0) {
+          const { data: fresh } = await supabase.from("events").select("*").order("date", { ascending: false });
+          if (fresh) setEvents(fresh as Event[]);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     if (!toast) return;
@@ -103,11 +125,12 @@ export function AdminEventsClient({ initialEvents }: AdminEventsClientProps) {
     luma_url: "",
     image_url: "",
     is_upcoming: true,
+    attendee_count: null as number | null,
   });
 
   function openCreate() {
     setEditingEvent(null);
-    setFormData({ title: "", description: "", date: "", location: "", luma_url: "", image_url: "", is_upcoming: true });
+    setFormData({ title: "", description: "", date: "", location: "", luma_url: "", image_url: "", is_upcoming: true, attendee_count: null });
     setIsModalOpen(true);
   }
 
@@ -121,6 +144,7 @@ export function AdminEventsClient({ initialEvents }: AdminEventsClientProps) {
       luma_url: event.luma_url,
       image_url: event.image_url || "",
       is_upcoming: event.is_upcoming,
+      attendee_count: event.attendee_count ?? null,
     });
     setIsModalOpen(true);
   }
@@ -193,10 +217,11 @@ export function AdminEventsClient({ initialEvents }: AdminEventsClientProps) {
   }
 
   const filteredEvents = events.filter((event) => {
+    const past = isEventPast(event.date);
     const matchesStatus =
       statusFilter === "all" ||
-      (statusFilter === "upcoming" && event.is_upcoming) ||
-      (statusFilter === "past" && !event.is_upcoming);
+      (statusFilter === "upcoming" && !past) ||
+      (statusFilter === "past" && past);
     const matchesSearch =
       !searchQuery.trim() ||
       event.title.toLowerCase().includes(searchQuery.toLowerCase().trim()) ||
@@ -401,8 +426,8 @@ export function AdminEventsClient({ initialEvents }: AdminEventsClientProps) {
                   <h3 className="text-base font-semibold truncate min-w-0 max-w-full" title={event.title}>
                     {event.title.length > 80 ? `${event.title.slice(0, 65)}...` : event.title}
                   </h3>
-                  <span className={cn("shrink-0 px-2 py-0.5 rounded-full text-xs font-medium h-6 flex items-center justify-center", event.is_upcoming ? "bg-green-500/10 text-green-500" : "bg-muted text-white")}>
-                    {event.is_upcoming ? "Upcoming" : "Past"}
+                  <span className={cn("shrink-0 px-2 py-0.5 rounded-full text-xs font-medium h-6 flex items-center justify-center", !isEventPast(event.date) ? "bg-green-500/10 text-green-500" : "bg-muted text-white")}>
+                    {isEventPast(event.date) ? "Past" : "Upcoming"}
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground mb-3 line-clamp-1">{event.description}</p>
@@ -458,9 +483,15 @@ export function AdminEventsClient({ initialEvents }: AdminEventsClientProps) {
                 <Input placeholder="Location" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} className="cursor-text" />
               </div>
             </div>
-            <div className="space-y-2">
-              <Label>Luma URL</Label>
-              <Input type="url" placeholder="https://lu.ma/..." value={formData.luma_url} onChange={(e) => setFormData({ ...formData, luma_url: e.target.value })} className="cursor-text" />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Luma URL</Label>
+                <Input type="url" placeholder="https://lu.ma/..." value={formData.luma_url} onChange={(e) => setFormData({ ...formData, luma_url: e.target.value })} className="cursor-text" />
+              </div>
+              <div className="space-y-2">
+                <Label>Attendees</Label>
+                <Input type="number" min={0} placeholder="0" value={formData.attendee_count ?? ""} onChange={(e) => setFormData({ ...formData, attendee_count: e.target.value ? parseInt(e.target.value, 10) : null })} className="cursor-text" />
+              </div>
             </div>
             <div className="space-y-2">
               <Label>Cover image</Label>
