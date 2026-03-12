@@ -28,7 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 
-const sidebarLinks = [
+const sidebarLinks: { href: string; label: string; icon: typeof LayoutDashboard; badge?: string }[] = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/dashboard/profile", label: "My Profile", icon: User },
   { href: "/dashboard/projects", label: "Projects", icon: FolderOpen },
@@ -329,7 +329,15 @@ export default function DashboardLayout({
           </div>
         </aside>
 
-        <main className="flex-1 min-h-screen p-6 md:p-8">{children}</main>
+        <main
+          className="flex-1 min-h-screen p-6 md:p-8 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: "url(/images/perks-bg.png)",
+            backgroundAttachment: "fixed",
+          }}
+        >
+          {children}
+        </main>
       </div>
     </div>
   );
