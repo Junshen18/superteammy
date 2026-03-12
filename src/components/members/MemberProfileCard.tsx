@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link2, X } from "lucide-react";
@@ -58,10 +58,13 @@ export function MemberProfileCard({
 
   const [isFlipped, setIsFlipped] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [frontCardHeight, setFrontCardHeight] = useState<number | null>(null);
+  const frontCardRef = useRef<HTMLDivElement>(null);
   const lenisRef = useLenisRef();
 
   const handleCardClick = () => {
     if (expandOnClick) {
+      setFrontCardHeight(null);
       setIsExpanded(true);
     } else {
       setIsFlipped((prev) => !prev);
@@ -97,6 +100,19 @@ export function MemberProfileCard({
       window.scrollTo(0, scrollY);
     };
   }, [isExpanded, lenisRef]);
+
+  // Sync back card height to front card when expanded
+  useEffect(() => {
+    if (!isExpanded || !frontCardRef.current) return;
+    const el = frontCardRef.current;
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setFrontCardHeight(entry.contentRect.height);
+      }
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [isExpanded]);
 
   const cardContent = (
     <>
@@ -639,12 +655,15 @@ export function MemberProfileCard({
                 className="flex gap-6 max-w-[90vw] overflow-x-auto overflow-y-hidden overscroll-contain"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="w-[320px] h-[420px] shrink-0">
-                  <div className="relative w-full h-full rounded-2xl overflow-hidden">
+                <div ref={frontCardRef} className="w-[320px] h-fit shrink-0">
+                  <div className="relative w-full rounded-2xl overflow-hidden">
                     {cardContent}
                   </div>
                 </div>
-                <div className="w-[320px] h-[420px] shrink-0">
+                <div
+                  className="w-[320px] shrink-0"
+                  style={{ height: frontCardHeight ?? 520 }}
+                >
                   <div className="relative w-full h-full rounded-2xl overflow-hidden">
                     {backContent}
                   </div>
