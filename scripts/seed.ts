@@ -128,6 +128,7 @@ const events = [
     luma_url: "https://lu.ma/superteammy",
     image_url: "/images/events/placeholder.jpg",
     is_upcoming: true,
+    attendee_count: 85,
   },
   {
     title: "Web3 Hackathon Malaysia",
@@ -137,6 +138,7 @@ const events = [
     luma_url: "https://lu.ma/superteammy",
     image_url: "/images/events/placeholder.jpg",
     is_upcoming: true,
+    attendee_count: 120,
   },
   {
     title: "DeFi Deep Dive Workshop",
@@ -147,6 +149,7 @@ const events = [
     luma_url: "https://lu.ma/superteammy",
     image_url: "/images/events/placeholder.jpg",
     is_upcoming: true,
+    attendee_count: 45,
   },
   {
     title: "Superteam MY Launch Party",
@@ -157,6 +160,27 @@ const events = [
     luma_url: "https://lu.ma/superteammy",
     image_url: "/images/events/placeholder.jpg",
     is_upcoming: false,
+    attendee_count: 150,
+  },
+  {
+    title: "Solana 101 Workshop",
+    description: "Introduction to Solana development for beginners.",
+    date: "2024-10-15T14:00:00+08:00",
+    location: "Kuala Lumpur, Malaysia",
+    luma_url: "https://lu.ma/superteammy",
+    image_url: "/images/events/placeholder.jpg",
+    is_upcoming: false,
+    attendee_count: 62,
+  },
+  {
+    title: "NFT & Creator Economy Meetup",
+    description: "Exploring NFTs and the creator economy on Solana.",
+    date: "2024-11-22T18:00:00+08:00",
+    location: "Virtual",
+    luma_url: "https://lu.ma/superteammy",
+    image_url: "/images/events/placeholder.jpg",
+    is_upcoming: false,
+    attendee_count: 38,
   },
 ];
 
@@ -362,6 +386,24 @@ async function main() {
   await seedTable("stats", stats);
   await seedTable("testimonials", testimonials);
   await seedTable("faqs", faqs);
+
+  console.log("\n3. Seeding dashboard metrics (for admin charts)...");
+  const dashboardMetrics = [
+    { metric_key: "gdp_brought_malaysia", value: 248500, period: "overall" },
+    { metric_key: "gdp_brought_malaysia", value: 8200, period: "this_month" },
+    { metric_key: "grants_awarded", value: 12, period: "overall" },
+    { metric_key: "grants_awarded", value: 2, period: "this_month" },
+    { metric_key: "bounties_awarded", value: 136985, period: "overall" },
+    { metric_key: "bounties_awarded", value: 0, period: "this_month" },
+  ];
+  const { error: dmError } = await supabase.from("dashboard_metrics").upsert(dashboardMetrics, {
+    onConflict: "metric_key,period",
+  });
+  if (dmError) {
+    console.warn("  Dashboard metrics upsert skipped (table may not exist yet):", dmError.message);
+  } else {
+    console.log("  Seeded dashboard_metrics");
+  }
 
   console.log("\nDone! Your Supabase database is now populated.\n");
 }
