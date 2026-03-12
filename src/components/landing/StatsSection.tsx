@@ -36,7 +36,7 @@ export function StatsSection({ stats }: StatsSectionProps) {
           transition={{ duration: 0.6 }}
           className="relative z-20 text-center mb-0"
         >
-          <h2 className="font-[family-name:var(--font-orbitron)] text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-7xl font-black text-white uppercase tracking-wide mb-4 md:mb-6 flex flex-col items-center justify-center gap-0">
+          <h2 className="font-[family-name:var(--font-orbitron)] text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-7xl font-black text-white uppercase tracking-wide mb-4 flex flex-col items-center justify-center gap-0">
             <div className="overflow-hidden" style={{ lineHeight: 1.25 }}>
               <motion.span
                 className="block text-center will-change-transform"
@@ -52,7 +52,7 @@ export function StatsSection({ stats }: StatsSectionProps) {
               </motion.span>
             </div>
           </h2>
-          <p className="text-sm sm:text-base md:text-lg text-white/90 leading-relaxed max-w-3xl mx-auto">
+          <p className="text-sm sm:text-base md:text-lg text-white/50 leading-relaxed max-w-3xl mx-auto">
             From local meetups to global opportunities, our community continues
             to grow through shipped projects, hosted events, and meaningful
             contributions across the ecosystem.

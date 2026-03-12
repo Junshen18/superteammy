@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
+import { ArrowRight } from "lucide-react";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import type { Partner } from "@/lib/types";
 
@@ -50,14 +51,21 @@ export function PartnersSection({ partners }: PartnersSectionProps) {
           ))}
         </div>
 
-        <div className="flex justify-center mt-12">
+        <div className="text-center mt-12">
           <a
             href="https://t.me/superteammy"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center px-8 py-3 rounded-xl bg-white/6 border border-white/10 hover:border-white/20 hover:bg-white/8 text-white font-semibold uppercase tracking-wider text-sm transition-all duration-300"
+            className="group relative overflow-hidden inline-flex items-center justify-center gap-2 min-h-[40px] bg-[#20211B]/20 border border-white/10 px-6 py-3 rounded-[8px] text-sm font-semibold font-[family-name:var(--font-orbitron)] transition-colors duration-300 hover:border-white cursor-pointer"
           >
-            View More Partners
+            <span
+              className="absolute inset-0 z-0 origin-left scale-x-0 bg-white transition-transform duration-300 ease-out group-hover:scale-x-100"
+              aria-hidden
+            />
+            <span className="relative z-10 flex items-center gap-2 pointer-events-none transition-colors duration-300 text-white group-hover:text-black">
+              View More Partners
+              <ArrowRight className="w-4 h-4" />
+            </span>
           </a>
         </div>
       </div>

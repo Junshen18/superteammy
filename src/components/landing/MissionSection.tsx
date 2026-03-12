@@ -185,9 +185,6 @@ export function MissionSection() {
         ref={headingRef}
         className="relative z-10 text-center px-6 py-10 mt-6"
       >
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white mb-2">
-          Our Mission
-        </p>
         <h2 className="font-[family-name:var(--font-orbitron)] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black text-white leading-tight max-w-5xl mx-auto flex flex-col items-center justify-center gap-0">
           {(["Empowering Malaysia's", "Solana Builders"] as const).map((line, i) => (
             <div key={i} className="overflow-hidden" style={{ lineHeight: 1.25 }}>

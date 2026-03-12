@@ -30,16 +30,12 @@ interface EventsSectionProps {
   events: Event[];
 }
 
-const PAST_EVENTS_PER_PAGE = 12;
+const PAST_EVENTS_LIMIT = 50;
 
 export function EventsSection({ events }: EventsSectionProps) {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
   const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming");
-  const [pastEventsToShow, setPastEventsToShow] =
-    useState(PAST_EVENTS_PER_PAGE);
-  const pastEvents = events.filter((e) => !e.is_upcoming);
-  const displayedPastEvents = pastEvents.slice(0, pastEventsToShow);
-  const hasMorePastEvents = pastEventsToShow < pastEvents.length;
+  const pastEvents = events.filter((e) => !e.is_upcoming).slice(0, PAST_EVENTS_LIMIT);
 
   return (
     <section id="events" className="bg-[#080B0E] overflow-x-hidden w-full">
@@ -222,11 +218,12 @@ export function EventsSection({ events }: EventsSectionProps) {
             >
               <div className="relative">
                 <div
-                  className="max-h-[800px] overflow-y-auto overscroll-contain rounded-xl pr-1 scrollbar-hide"
+                  className="max-h-[800px] overflow-y-auto overscroll-contain rounded-xl pr-1"
                   data-lenis-prevent
+                  style={{ WebkitOverflowScrolling: "touch" }}
                 >
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-1">
-                  {displayedPastEvents.map((event) => (
+                  {pastEvents.map((event) => (
                     <a
                       key={event.id}
                       href={event.luma_url}
