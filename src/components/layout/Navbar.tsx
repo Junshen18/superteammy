@@ -270,7 +270,7 @@ export function Navbar() {
     <>
       {/* Floating Navbar */}
       <nav
-        className="fixed top-0 left-0 right-0 z-[100] pointer-events-none"
+        className="fixed top-0 left-0 right-0 z-100 pointer-events-none"
         style={{ padding: "12px 16px" }}
       >
         <div

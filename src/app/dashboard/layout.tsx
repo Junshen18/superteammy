@@ -32,13 +32,14 @@ const sidebarLinks = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/dashboard/profile", label: "My Profile", icon: User },
   { href: "/dashboard/projects", label: "Projects", icon: FolderOpen },
-  { href: "/dashboard/perks", label: "Perks", icon: Gift, badge: "WIP" },
+  { href: "/dashboard/perks", label: "Perks", icon: Gift },
 ];
 
 const adminLinks = [
   { href: "/dashboard/members", label: "Members", icon: Users, roles: ["super_admin"] as const },
   { href: "/dashboard/events", label: "Events", icon: Calendar, roles: ["super_admin", "admin"] as const },
   { href: "/dashboard/partners", label: "Partners", icon: Handshake, roles: ["super_admin", "admin"] as const },
+  { href: "/dashboard/manage-perks", label: "Perks", icon: Gift, roles: ["super_admin", "admin"] as const },
   { href: "/dashboard/content", label: "Site Content", icon: FileText, roles: ["super_admin", "admin"] as const },
   { href: "/dashboard/invites", label: "Invites", icon: Mail, roles: ["super_admin"] as const },
 ];

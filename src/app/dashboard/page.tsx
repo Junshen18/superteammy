@@ -187,6 +187,11 @@ export default function DashboardPage() {
                   Partners
                 </span>
               </Link>
+              <Link href="/dashboard/manage-perks">
+                <span className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-white/5 hover:bg-white/10 border border-white/10 transition-colors cursor-pointer">
+                  Perks
+                </span>
+              </Link>
               <Link href="/dashboard/content">
                 <span className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-white/5 hover:bg-white/10 border border-white/10 transition-colors cursor-pointer">
                   Site Content
@@ -251,17 +256,14 @@ export default function DashboardPage() {
           </Card>
         </Link>
 
-        <Card className="border-amber-500/20">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/10 text-amber-500">
-              WIP
-            </span>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">Perks</p>
-            <p className="text-sm text-muted-foreground mt-1">Coming soon</p>
-          </CardContent>
-        </Card>
+        <Link href="/dashboard/perks">
+          <Card className="border-primary/20 hover:border-primary/40 transition-colors cursor-pointer h-full">
+            <CardContent className="pt-6">
+              <p className="text-2xl font-bold">Perks</p>
+              <p className="text-sm text-muted-foreground mt-1">Claim member perks</p>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       <Card>
