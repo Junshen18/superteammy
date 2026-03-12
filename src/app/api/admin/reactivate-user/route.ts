@@ -20,17 +20,27 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Missing userId" }, { status: 400 });
   }
 
-  if (userId === user.id) {
-    return NextResponse.json({ error: "Cannot delete yourself" }, { status: 400 });
-  }
-
   const admin = createAdminClient();
 
-  // Profile and related data are cascade-deleted via FK
-  const { error: deleteErr } = await admin.auth.admin.deleteUser(userId);
+  // 1. Set profile.is_active = true
+  const { error: profileErr } = await admin
+    .from("profiles")
+    .update({ is_active: true })
+    .eq("id", userId);
 
-  if (deleteErr) {
-    return NextResponse.json({ error: deleteErr.message }, { status: 500 });
+  if (profileErr) {
+    return NextResponse.json({ error: profileErr.message }, { status: 500 });
+  }
+
+  // 2. Unban user in Auth
+  const { data: authUser } = await admin.auth.admin.getUserById(userId);
+  if (authUser?.user) {
+    const existingMeta = (authUser.user.app_metadata || {}) as Record<string, unknown>;
+    const { deactivated: _, ...rest } = existingMeta;
+    await admin.auth.admin.updateUserById(userId, {
+      app_metadata: rest,
+      ban_duration: "none",
+    });
   }
 
   return NextResponse.json({ success: true });
