@@ -275,30 +275,6 @@ export function MemberProfileCard({
               <p className="text-xs text-white/80">{profile.talk_to_me_about}</p>
             </div>
           )}
-          {hasAnyLink && (
-            <div className="flex items-center justify-center gap-4 mt-auto pt-3">
-              {profile.twitter_url && (
-                <a href={profile.twitter_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-white/70 hover:text-white transition-colors" aria-label="X">
-                  <Image src="/icons/x.svg" alt="" width={16} height={16} className="shrink-0" />
-                </a>
-              )}
-              {profile.linkedin_url && (
-                <a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-white/70 hover:text-white transition-colors" aria-label="LinkedIn">
-                  <Image src="/images/linkedin.svg" alt="" width={16} height={16} className="shrink-0" />
-                </a>
-              )}
-              {profile.telegram_url && (
-                <a href={profile.telegram_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-white/70 hover:text-white transition-colors" aria-label="Telegram">
-                  <Image src="/icons/telegram.svg" alt="" width={16} height={16} className="shrink-0" />
-                </a>
-              )}
-              {profile.website_url && (
-                <a href={profile.website_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-white/70 hover:text-white transition-colors" aria-label="Portfolio">
-                  <Link2 className="w-4 h-4" />
-                </a>
-              )}
-            </div>
-          )}
         </div>
       </div>
     </div>
