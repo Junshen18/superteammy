@@ -10,7 +10,7 @@ interface PerksPageClientProps {
 
 export function PerksPageClient({ perks }: PerksPageClientProps) {
   return (
-    <div className="max-w-5xl mx-auto">
+    <div>
       {/* Header - ETHGlobal style */}
       <div className="mb-12">
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Member Pack</h1>

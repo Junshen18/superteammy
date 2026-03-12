@@ -10,7 +10,6 @@ import {
   Gift,
   LogOut,
   Menu,
-  X,
   ArrowLeft,
   LayoutDashboard,
   Users,
@@ -20,6 +19,7 @@ import {
   Mail,
   PanelLeftClose,
   PanelLeft,
+  BarChart3,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
@@ -41,6 +41,7 @@ const adminLinks = [
   { href: "/dashboard/partners", label: "Partners", icon: Handshake, roles: ["super_admin", "admin"] as const },
   { href: "/dashboard/manage-perks", label: "Perks", icon: Gift, roles: ["super_admin", "admin"] as const },
   { href: "/dashboard/content", label: "Site Content", icon: FileText, roles: ["super_admin", "admin"] as const },
+  { href: "/dashboard/metrics", label: "Dashboard Metrics", icon: BarChart3, roles: ["super_admin", "admin"] as const },
   { href: "/dashboard/invites", label: "Invites", icon: Mail, roles: ["super_admin"] as const },
 ];
 
@@ -175,12 +176,25 @@ export default function DashboardLayout({
 
   return (
     <div className="dark min-h-screen" style={{ backgroundColor: "#080B0E" }}>
-      <button
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="fixed top-4 left-4 z-50 md:hidden p-2 rounded-lg bg-card border"
-      >
-        {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
-      </button>
+      {!sidebarOpen && (
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="fixed top-4 right-4 z-50 md:hidden p-2 rounded-lg bg-card border"
+        >
+          <Menu size={20} />
+        </button>
+      )}
+
+      {sidebarOpen && (
+        <div
+          role="button"
+          tabIndex={0}
+          aria-label="Close sidebar"
+          onClick={() => setSidebarOpen(false)}
+          onKeyDown={(e) => e.key === "Escape" && setSidebarOpen(false)}
+          className="fixed inset-0 z-30 md:hidden bg-black/50 backdrop-blur-sm"
+        />
+      )}
 
       <div className="flex">
         <aside
@@ -198,14 +212,14 @@ export default function DashboardLayout({
                 alt="Superteam Malaysia"
                 width={40}
                 height={40}
-                className={cn("h-8 w-8 object-contain", "hidden", sidebarCollapsed && "md:block")}
+                className={cn("h-6 w-6 object-contain", "hidden", sidebarCollapsed && "md:block")}
               />
               <Image
                 src="/superteam.svg"
                 alt="Superteam Malaysia"
                 width={120}
                 height={24}
-                className={cn("h-6 w-auto", sidebarCollapsed && "md:hidden")}
+                className={cn("h-4 w-auto md:h-6", sidebarCollapsed && "md:hidden")}
               />
             </Link>
           </div>
@@ -336,7 +350,9 @@ export default function DashboardLayout({
             backgroundAttachment: "fixed",
           }}
         >
-          {children}
+          <div className="max-w-5xl mx-auto w-full">
+            {children}
+          </div>
         </main>
       </div>
     </div>
