@@ -33,7 +33,6 @@ import { UnicornBackground } from "@/components/ui/UnicornBackground";
 
 const sidebarLinks: { href: string; label: string; icon: typeof LayoutDashboard; badge?: string }[] = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-  { href: "/dashboard/profile", label: "My Profile", icon: User },
   { href: "/dashboard/projects", label: "Projects", icon: FolderOpen },
   { href: "/dashboard/perks", label: "Perks", icon: Gift },
 ];
@@ -61,6 +60,7 @@ export default function DashboardLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [profileData, setProfileData] = useState<{ avatar_url: string | null; nickname: string | null } | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
@@ -93,7 +93,7 @@ export default function DashboardLayout({
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("onboarding_completed, user_role")
+      .select("onboarding_completed, user_role, avatar_url, nickname")
       .eq("id", user.id)
       .single();
 
@@ -103,6 +103,7 @@ export default function DashboardLayout({
     }
 
     setUserRole(profile.user_role);
+    setProfileData({ avatar_url: profile.avatar_url ?? null, nickname: profile.nickname ?? null });
     setIsAuthenticated(true);
     setIsLoading(false);
   }
@@ -116,7 +117,7 @@ export default function DashboardLayout({
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("onboarding_completed, user_role")
+        .select("onboarding_completed, user_role, avatar_url, nickname")
         .eq("id", data.user!.id)
         .single();
 
@@ -126,6 +127,7 @@ export default function DashboardLayout({
       }
 
       setUserRole(profile.user_role);
+      setProfileData({ avatar_url: profile.avatar_url ?? null, nickname: profile.nickname ?? null });
       setIsAuthenticated(true);
     } catch (err: unknown) {
       setLoginError(err instanceof Error ? err.message : "Login failed");
@@ -316,6 +318,27 @@ export default function DashboardLayout({
           </nav>
 
           <div className={cn("p-3 border-t border-border/50 space-y-1", sidebarCollapsed && "md:p-3 md:pt-3")}>
+            <Link
+              href="/dashboard/profile"
+              onClick={() => setSidebarOpen(false)}
+              title={sidebarCollapsed ? "My Profile" : undefined}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors",
+                pathname === "/dashboard/profile" && "bg-primary/10 text-primary",
+                sidebarCollapsed && "md:justify-center md:px-0"
+              )}
+            >
+              <span className="w-8 h-8 rounded-full bg-muted shrink-0 overflow-hidden flex items-center justify-center">
+                {profileData?.avatar_url ? (
+                  <Image src={profileData.avatar_url} alt="" width={32} height={32} className="w-full h-full object-cover" />
+                ) : (
+                  <User className="w-4 h-4 text-muted-foreground" />
+                )}
+              </span>
+              <span className={cn("font-medium truncate", sidebarCollapsed && "md:hidden")}>
+                {profileData?.nickname || "My Profile"}
+              </span>
+            </Link>
             <button
               type="button"
               onClick={() => {

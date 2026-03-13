@@ -29,6 +29,12 @@ export default function ProjectsPage() {
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; title: string } | null>(null);
 
   const [formData, setFormData] = useState({ title: "", description: "", link: "" });
+  const [initialFormState, setInitialFormState] = useState<{
+    formData: { title: string; description: string; link: string };
+    selectedSkills: MultiSelectOption[];
+    selectedSubskills: MultiSelectOption[];
+  } | null>(null);
+  const [showUnsavedConfirm, setShowUnsavedConfirm] = useState(false);
 
   const [allSkills, setAllSkills] = useState<MultiSelectOption[]>([]);
   const [selectedSkills, setSelectedSkills] = useState<MultiSelectOption[]>([]);
@@ -76,9 +82,11 @@ export default function ProjectsPage() {
 
   function openCreate() {
     setEditingProject(null);
-    setFormData({ title: "", description: "", link: "" });
+    const initial = { title: "", description: "", link: "" };
+    setFormData(initial);
     setSelectedSkills([]);
     setSelectedSubskills([]);
+    setInitialFormState({ formData: initial, selectedSkills: [], selectedSubskills: [] });
     setIsModalOpen(true);
   }
 
@@ -91,13 +99,46 @@ export default function ProjectsPage() {
       supabase.from("project_subskills").select("subskill_id, subskills:subskill_id(id, name)").eq("project_id", project.id),
     ]);
 
-    setSelectedSkills(
-      (skillsRes.data || []).map((r: Record<string, unknown>) => r.skills as MultiSelectOption).filter(Boolean)
-    );
-    setSelectedSubskills(
-      (subskillsRes.data || []).map((r: Record<string, unknown>) => r.subskills as MultiSelectOption).filter(Boolean)
-    );
+    const skills = (skillsRes.data || []).map((r: Record<string, unknown>) => r.skills as MultiSelectOption).filter(Boolean);
+    const subskills = (subskillsRes.data || []).map((r: Record<string, unknown>) => r.subskills as MultiSelectOption).filter(Boolean);
+    setSelectedSkills(skills);
+    setSelectedSubskills(subskills);
+    setInitialFormState({
+      formData: { title: project.title, description: project.description, link: project.link },
+      selectedSkills: skills,
+      selectedSubskills: subskills,
+    });
     setIsModalOpen(true);
+  }
+
+  function hasUnsavedChanges(): boolean {
+    if (!initialFormState) return false;
+    const { formData: init, selectedSkills: initSkills, selectedSubskills: initSubskills } = initialFormState;
+    const ids = (arr: MultiSelectOption[]) => arr.map((s) => s.id).sort().join(",");
+    return (
+      formData.title !== init.title ||
+      formData.description !== init.description ||
+      formData.link !== init.link ||
+      ids(selectedSkills) !== ids(initSkills) ||
+      ids(selectedSubskills) !== ids(initSubskills)
+    );
+  }
+
+  function handleModalOpenChange(open: boolean) {
+    if (open) {
+      setIsModalOpen(true);
+      return;
+    }
+    if (hasUnsavedChanges()) {
+      setShowUnsavedConfirm(true);
+      return;
+    }
+    setIsModalOpen(false);
+  }
+
+  function handleDiscardAndClose() {
+    setShowUnsavedConfirm(false);
+    setIsModalOpen(false);
   }
 
   async function handleSave() {
@@ -227,7 +268,7 @@ export default function ProjectsPage() {
         </div>
       )}
 
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+      <Dialog open={isModalOpen} onOpenChange={handleModalOpenChange}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto bg-[#080B0E] border-border/50 text-foreground [&_input]:bg-[#171717] [&_input]:border-border/50 [&_textarea]:bg-[#171717] [&_textarea]:border-border/50 [&_button]:cursor-pointer">
           <DialogHeader>
             <DialogTitle>{editingProject ? "Edit Project" : "Add Project"}</DialogTitle>
@@ -259,6 +300,7 @@ export default function ProjectsPage() {
                 onChange={setSelectedSkills}
                 onCreateNew={(name) => createTag("skills", name)}
                 placeholder="Select skills..."
+                dropdownInPortal
               />
             </div>
             <div className="space-y-2">
@@ -269,15 +311,33 @@ export default function ProjectsPage() {
                 onChange={setSelectedSubskills}
                 onCreateNew={(name) => createTag("subskills", name)}
                 placeholder="Select subskills..."
+                dropdownInPortal
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsModalOpen(false)} className="cursor-pointer bg-[#080B0E] border-border/50 hover:bg-[#171717] hover:text-white">
+            <Button variant="outline" onClick={() => handleModalOpenChange(false)} className="cursor-pointer bg-[#080B0E] border-border/50 hover:bg-[#171717] hover:text-white">
               Cancel
             </Button>
             <Button onClick={handleSave} className="cursor-pointer">
               {editingProject ? "Save Changes" : "Add Project"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showUnsavedConfirm} onOpenChange={(open) => !open && setShowUnsavedConfirm(false)}>
+        <DialogContent className="max-w-md bg-[#080B0E] border-white/10 text-foreground">
+          <DialogHeader>
+            <DialogTitle>Discard unsaved changes?</DialogTitle>
+            <p className="text-sm text-muted-foreground">You have unsaved changes. Are you sure you want to close?</p>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowUnsavedConfirm(false)} className="cursor-pointer bg-[#080B0E] border-border/50 hover:bg-[#171717] hover:text-white">
+              Keep editing
+            </Button>
+            <Button onClick={handleDiscardAndClose} variant="destructive" className="cursor-pointer">
+              Discard
             </Button>
           </DialogFooter>
         </DialogContent>

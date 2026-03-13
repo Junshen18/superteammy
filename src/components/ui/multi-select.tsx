@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect } from "react";
+import { createPortal } from "react-dom";
 import { X, Plus, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +17,8 @@ interface MultiSelectProps {
   onCreateNew?: (name: string) => Promise<MultiSelectOption | null>;
   placeholder?: string;
   allowCreate?: boolean;
+  /** When true, dropdown renders in a portal so it can overflow outside modals */
+  dropdownInPortal?: boolean;
 }
 
 export function MultiSelect({
@@ -25,12 +28,37 @@ export function MultiSelect({
   onCreateNew,
   placeholder = "Search...",
   allowCreate = true,
+  dropdownInPortal = false,
 }: MultiSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useLayoutEffect(() => {
+    if (!dropdownInPortal || !isOpen || !containerRef.current) return;
+    function updatePosition() {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      setDropdownStyle({
+        position: "fixed",
+        top: rect.bottom + 4,
+        left: rect.left,
+        width: rect.width,
+        zIndex: 9999,
+      });
+    }
+    updatePosition();
+    const resizeObserver = new ResizeObserver(updatePosition);
+    resizeObserver.observe(containerRef.current);
+    window.addEventListener("scroll", updatePosition, true);
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [isOpen, dropdownInPortal]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -120,37 +148,48 @@ export function MultiSelect({
         />
       </div>
 
-      {isOpen && (filtered.length > 0 || showCreate) && (
-        <div className="absolute z-50 mt-1 w-full rounded-md border border-white/10 bg-[#080B0E] shadow-lg max-h-48 overflow-y-auto">
-          {filtered.length === 0 && !showCreate && (
-            <div className="px-3 py-2 text-xs text-muted-foreground flex items-center gap-2">
-              <Search className="w-3 h-3" />
-              No results found
-            </div>
-          )}
-          {filtered.map((option) => (
-            <button
-              key={option.id}
-              type="button"
-              onClick={() => handleSelect(option)}
-              className="w-full text-left px-3 py-2 text-sm text-white/80 hover:bg-white/10 hover:text-white cursor-pointer transition-colors"
-            >
-              {option.name}
-            </button>
-          ))}
-          {showCreate && (
-            <button
-              type="button"
-              onClick={handleCreate}
-              disabled={isCreating}
-              className="w-full text-left px-3 py-2 text-sm text-primary hover:bg-white/10 cursor-pointer transition-colors flex items-center gap-2 border-t border-white/5"
-            >
-              <Plus className="w-3 h-3" />
-              {isCreating ? "Creating..." : `Create "${search.trim()}"`}
-            </button>
-          )}
-        </div>
-      )}
+      {isOpen && (filtered.length > 0 || showCreate) && (() => {
+        const dropdownContent = (
+          <div
+            className={cn(
+              "rounded-md border border-white/10 bg-[#080B0E] shadow-lg max-h-48 overflow-y-auto",
+              dropdownInPortal ? "" : "absolute z-50 mt-1 w-full"
+            )}
+            style={dropdownInPortal ? dropdownStyle : undefined}
+          >
+            {filtered.length === 0 && !showCreate && (
+              <div className="px-3 py-2 text-xs text-muted-foreground flex items-center gap-2">
+                <Search className="w-3 h-3" />
+                No results found
+              </div>
+            )}
+            {filtered.map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                onClick={() => handleSelect(option)}
+                className="w-full text-left px-3 py-2 text-sm text-white/80 hover:bg-white/10 hover:text-white cursor-pointer transition-colors"
+              >
+                {option.name}
+              </button>
+            ))}
+            {showCreate && (
+              <button
+                type="button"
+                onClick={handleCreate}
+                disabled={isCreating}
+                className="w-full text-left px-3 py-2 text-sm text-primary hover:bg-white/10 cursor-pointer transition-colors flex items-center gap-2 border-t border-white/5"
+              >
+                <Plus className="w-3 h-3" />
+                {isCreating ? "Creating..." : `Create "${search.trim()}"`}
+              </button>
+            )}
+          </div>
+        );
+        return dropdownInPortal && typeof document !== "undefined"
+          ? createPortal(dropdownContent, document.body)
+          : dropdownContent;
+      })()}
     </div>
   );
 }
