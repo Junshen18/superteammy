@@ -55,8 +55,8 @@ export function MissionSection() {
 
     if (!section || !container || pillarsEl.length === 0) return;
 
-    // Only run GSAP animations on desktop (md breakpoint: 768px+)
-    const mediaQuery = window.matchMedia("(min-width: 768px)");
+    // Only run GSAP animations on laptop (xl breakpoint: 1280px+)
+    const mediaQuery = window.matchMedia("(min-width: 1280px)");
     if (!mediaQuery.matches) return;
 
     let handleWheel: (e: WheelEvent) => void;
@@ -182,7 +182,7 @@ export function MissionSection() {
     <section
       id="missions"
       ref={sectionRef}
-      className="relative min-h-screen flex flex-col justify-center overflow-visible"
+      className="relative min-h-screen flex flex-col justify-center overflow-visible xl:pb-12"
     >
       {/* Background - Next.js Image auto-serves WebP when supported */}
       <div className="absolute inset-0 z-0">
@@ -198,7 +198,7 @@ export function MissionSection() {
       {/* Centered heading */}
       <div
         ref={headingRef}
-        className="relative z-10 text-center px-6 py-10 mt-6"
+        className="relative z-10 text-center px-6 py-7 md:py-10 mt-6"
       >
         <h2 className="font-[family-name:var(--font-orbitron)] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black text-white leading-tight max-w-5xl mx-auto flex flex-col items-center justify-center gap-0">
           {(["Empowering Malaysia's", "Solana Builders"] as const).map((line, i) => (
@@ -226,9 +226,9 @@ export function MissionSection() {
         {pillars.map((pillar, i) => (
           <motion.div
             key={pillar.title}
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 80 }}
             animate={titleRevealed ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.5, delay: i * 0.1 }}
+            transition={{ duration: 0.6, delay: i * 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
             className="relative h-[280px] overflow-hidden rounded-xl"
           >
             <div className="absolute inset-0">
@@ -242,10 +242,10 @@ export function MissionSection() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
             </div>
             <div className="absolute inset-0 flex flex-col justify-end p-6 z-10">
-              <h3 className="font-[family-name:var(--font-orbitron)] font-bold text-white text-2xl mb-2 drop-shadow-lg">
+              <h3 className="font-[family-name:var(--font-orbitron)] font-black text-white text-3xl mb-1 drop-shadow-lg">
                 {pillar.title}
               </h3>
-              <p className="text-white/90 text-sm leading-relaxed">
+              <p className="text-white/90 text-[12px] ">
                 {pillar.description}
               </p>
             </div>
@@ -253,10 +253,42 @@ export function MissionSection() {
         ))}
       </div>
 
-      {/* Desktop: 4 pillars - horizontal row, centered */}
+      {/* Tablet: 2x2 grid (768px - 1279px) */}
+      <div className="relative z-10 hidden md:grid xl:hidden grid-cols-2 gap-6 px-6 pb-16">
+        {pillars.map((pillar, i) => (
+          <motion.div
+            key={pillar.title}
+            initial={{ opacity: 0, y: 80 }}
+            animate={titleRevealed ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: i * 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
+            className="relative h-[280px] overflow-hidden rounded-xl"
+          >
+            <div className="absolute inset-0">
+              <Image
+                src={pillar.image}
+                alt={pillar.title}
+                fill
+                className="object-cover object-center"
+                sizes="50vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+            </div>
+            <div className="absolute inset-0 flex flex-col justify-end p-6 z-10">
+              <h3 className="font-[family-name:var(--font-orbitron)] font-black text-white text-3xl mb-1 drop-shadow-lg">
+                {pillar.title}
+              </h3>
+              <p className="text-white/90 text-[12px] ">
+                {pillar.description}
+              </p>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Desktop: 4 pillars - horizontal row, centered (1280px+) */}
       <div
         ref={pillarsContainerRef}
-        className="relative z-10 hidden md:flex w-full overflow-visible justify-center items-center gap-12 min-h-[550px] px-6 md:px-10"
+        className="relative z-10 hidden xl:flex w-full overflow-visible justify-center items-center gap-12 min-h-[550px] px-6 md:px-10"
       >
         {pillars.map((pillar, i) => (
           <div
@@ -288,8 +320,8 @@ export function MissionSection() {
                 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center shrink-0 min-h-[600px] w-fit"
               >
                 <span
-                  className="font-[family-name:var(--font-orbitron)] font-bold text-white drop-shadow-lg origin-center whitespace-nowrap"
-                  style={{ writingMode: "vertical-rl", fontSize: 120, transform: "rotate(180deg)" }}
+                  className="font-[family-name:var(--font-orbitron)] font-black text-[80px] xl:text-[120px] text-white drop-shadow-lg origin-center whitespace-nowrap"
+                  style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
                 >
                   {pillar.title}
                 </span>
@@ -300,10 +332,10 @@ export function MissionSection() {
                 ref={(el) => {
                   descRefs.current[i] = el;
                 }}
-                className="flex items-end p-12 pl-52 overflow-hidden"
+                className="flex items-end px-12 pb-8 xl:px-12 xl:pb-12 xl:pl-52 overflow-hidden"
                 style={{ flex: "0 0 0", width: 0, minWidth: 0, opacity: 0 }}
               >
-                <p className="text-xl md:text-2xl lg:text-3xl text-white/90 leading-relaxed">
+                <p className="md:text-base xl:text-2xl text-white/90 ">
                   {pillar.description}
                 </p>
               </div>

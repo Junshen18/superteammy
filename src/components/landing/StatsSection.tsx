@@ -36,7 +36,7 @@ export function StatsSection({ stats }: StatsSectionProps) {
           transition={{ duration: 0.6 }}
           className="relative z-20 text-center mb-0"
         >
-          <h2 className="font-[family-name:var(--font-orbitron)] text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-7xl font-black text-white uppercase tracking-wide mb-4 flex flex-col items-center justify-center gap-0">
+          <h2 className="font-[family-name:var(--font-orbitron)] text-[32px]  md:text-4xl lg:text-5xl xl:text-7xl font-black text-white uppercase tracking-wide mb-4 flex flex-col items-center justify-center gap-0">
             <div className="overflow-hidden" style={{ lineHeight: 1.25 }}>
               <motion.span
                 className="block text-center will-change-transform"
@@ -52,7 +52,7 @@ export function StatsSection({ stats }: StatsSectionProps) {
               </motion.span>
             </div>
           </h2>
-          <p className="text-sm sm:text-base md:text-lg text-white/90 leading-relaxed max-w-3xl mx-auto">
+          <p className="text-[10px] px-3 sm:text-base md:text-lg text-white/90 leading-relaxed max-w-3xl mx-auto">
             From local meetups to global opportunities, our community continues
             to grow through shipped projects, hosted events, and meaningful
             contributions across the ecosystem.
@@ -64,7 +64,7 @@ export function StatsSection({ stats }: StatsSectionProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="relative z-10 flex justify-center -mt-8 md:-mt-16 mb-12 md:mb-16"
+          className="relative z-10 flex justify-center lg:-mt-16 mb-8 lg:mb-16"
         >
           <div className="w-full max-w-6xl xl:max-w-7xl aspect-[1180/516] relative">
             <Image
@@ -77,7 +77,7 @@ export function StatsSection({ stats }: StatsSectionProps) {
         </motion.div>
 
         {/* Stats - Index 64px, Label 16px, responsive */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-8">
           {stats.map((stat, index) => (
             <motion.div
               key={stat.id}
@@ -86,10 +86,10 @@ export function StatsSection({ stats }: StatsSectionProps) {
               transition={{ duration: 0.5, delay: 0.2 + index * 0.1 }}
               className="text-center"
             >
-              <div className="font-[family-name:var(--font-orbitron)] font-bold text-white mb-1 md:mb-2 tabular-nums text-[2rem] sm:text-[2.5rem] md:text-[3rem] lg:text-[4rem]">
+              <div className="font-[family-name:var(--font-orbitron)] font-black text-white md:mb-2 tabular-nums text-[36px] md:text-[3rem] lg:text-[64px]">
                 <AnimatedCounter end={stat.value} suffix={stat.suffix} />
               </div>
-              <p className="text-white/90 uppercase tracking-wider text-xs sm:text-sm md:text-base">
+              <p className="font-[family-name:var(--font-orbitron)] font-black text-white/90 uppercase text-[10px] md:text-base">
                 {stat.label}
               </p>
             </motion.div>
