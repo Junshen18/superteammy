@@ -52,7 +52,7 @@ export function StatsSection({ stats }: StatsSectionProps) {
               </motion.span>
             </div>
           </h2>
-          <p className="text-sm sm:text-base md:text-lg text-white/50 leading-relaxed max-w-3xl mx-auto">
+          <p className="text-sm sm:text-base md:text-lg text-white/90 leading-relaxed max-w-3xl mx-auto">
             From local meetups to global opportunities, our community continues
             to grow through shipped projects, hosted events, and meaningful
             contributions across the ecosystem.

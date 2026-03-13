@@ -55,9 +55,24 @@ export function MissionSection() {
 
     if (!section || !container || pillarsEl.length === 0) return;
 
-    let handleWheel: (e: WheelEvent) => void;
+    // Only run GSAP animations on desktop (md breakpoint: 768px+)
+    const mediaQuery = window.matchMedia("(min-width: 768px)");
+    if (!mediaQuery.matches) return;
 
-    const ctx = gsap.context(() => {
+    let handleWheel: (e: WheelEvent) => void;
+    let ctx: gsap.Context | null = null;
+
+    const cleanup = () => {
+      window.removeEventListener("wheel", handleWheel);
+      ctx?.revert();
+    };
+
+    const onResize = () => {
+      if (!mediaQuery.matches) cleanup();
+    };
+    mediaQuery.addEventListener("change", onResize);
+
+    ctx = gsap.context(() => {
       // Set initial state: visible, collapsed
       pillarsEl.forEach((el) => {
         gsap.set(el, { width: COLLAPSED_WIDTH, minWidth: COLLAPSED_WIDTH });
@@ -143,8 +158,8 @@ export function MissionSection() {
     }, section);
 
     return () => {
-      window.removeEventListener("wheel", handleWheel);
-      ctx.revert();
+      mediaQuery.removeEventListener("change", onResize);
+      cleanup();
     };
   }, []);
 
@@ -206,10 +221,42 @@ export function MissionSection() {
         </h2>
       </div>
 
-      {/* 4 pillars - horizontal row, centered */}
+      {/* Mobile: vertical stack of cards */}
+      <div className="relative z-10 flex md:hidden flex-col gap-6 px-6 pb-16">
+        {pillars.map((pillar, i) => (
+          <motion.div
+            key={pillar.title}
+            initial={{ opacity: 0, y: 24 }}
+            animate={titleRevealed ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.5, delay: i * 0.1 }}
+            className="relative h-[280px] overflow-hidden rounded-xl"
+          >
+            <div className="absolute inset-0">
+              <Image
+                src={pillar.image}
+                alt={pillar.title}
+                fill
+                className="object-cover object-center"
+                sizes="100vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+            </div>
+            <div className="absolute inset-0 flex flex-col justify-end p-6 z-10">
+              <h3 className="font-[family-name:var(--font-orbitron)] font-bold text-white text-2xl mb-2 drop-shadow-lg">
+                {pillar.title}
+              </h3>
+              <p className="text-white/90 text-sm leading-relaxed">
+                {pillar.description}
+              </p>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Desktop: 4 pillars - horizontal row, centered */}
       <div
         ref={pillarsContainerRef}
-        className="relative z-10 flex w-full overflow-visible justify-center items-center gap-12 min-h-[550px] px-6 md:px-10"
+        className="relative z-10 hidden md:flex w-full overflow-visible justify-center items-center gap-12 min-h-[550px] px-6 md:px-10"
       >
         {pillars.map((pillar, i) => (
           <div
