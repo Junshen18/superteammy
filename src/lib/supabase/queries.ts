@@ -1,5 +1,5 @@
 import { createServerClient } from "./server";
-import type { Member, Event, Partner, Stat, Testimonial, FAQ, Profile, Invite, LookupTag, SubskillTag, Project, Perk, CommunityTweet } from "../types";
+import type { Member, Event, Partner, Stat, Testimonial, FAQ, Profile, Invite, LookupTag, SubskillTag, Project, Perk, CommunityTweet, SiteContent } from "../types";
 
 export async function getMembers(): Promise<Member[]> {
   const supabase = await createServerClient();
@@ -137,6 +137,28 @@ export async function getFAQs(): Promise<FAQ[]> {
   } catch (err) {
     console.error("Failed to fetch FAQs:", err instanceof Error ? err.message : "Unknown error");
     return [];
+  }
+}
+
+export async function getSiteContent(): Promise<Record<string, SiteContent>> {
+  try {
+    const supabase = await createServerClient();
+    const { data, error } = await supabase
+      .from("site_content")
+      .select("*");
+
+    if (error) {
+      console.error("Failed to fetch site content:", error.message);
+      return {};
+    }
+    const map: Record<string, SiteContent> = {};
+    for (const row of (data ?? []) as SiteContent[]) {
+      map[row.section_key] = row;
+    }
+    return map;
+  } catch (err) {
+    console.error("Failed to fetch site content:", err instanceof Error ? err.message : "Unknown error");
+    return {};
   }
 }
 

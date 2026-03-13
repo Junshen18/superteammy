@@ -155,6 +155,13 @@ export interface SiteContent {
   cta_text: string;
   cta_url: string;
   image_url: string;
+  content?: Record<string, unknown>;
+}
+
+export interface MissionPillar {
+  title: string;
+  description: string;
+  image_url: string;
 }
 
 export interface Perk {
