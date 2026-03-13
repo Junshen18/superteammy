@@ -132,6 +132,11 @@ body {
   background: #9945FF;
 }
 
+/* Override react-tweet theme: remove tweet container margin */
+.react-tweet-theme {
+  --tweet-container-margin: 0 !important;
+}
+
 /* Hide scrollbar for carousel / horizontal scroll areas */
 .scrollbar-hide {
   scrollbar-width: none;
