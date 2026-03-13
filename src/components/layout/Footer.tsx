@@ -29,7 +29,7 @@ const socialLinks = [
 
 const navLinks = [
   { href: "#about", label: "About" },
-  { href: "#about", label: "Mission" },
+  { href: "#missions", label: "Mission" },
   { href: "#impact", label: "Impact" },
   { href: "#events", label: "Events" },
   { href: "/members", label: "Members" },

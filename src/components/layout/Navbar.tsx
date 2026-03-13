@@ -8,20 +8,22 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useScrambleText } from "@/hooks/useScrambleText";
 
 const navLinks = [
-  { href: "#about", label: "MISSIONS" },
+  { href: "#about", label: "ABOUT" },
+  { href: "#missions", label: "MISSIONS" },
   { href: "#impact", label: "IMPACTS" },
   { href: "#events", label: "EVENTS" },
-  { href: "/members", label: "MEMBERS" },
+  { href: "#members", label: "MEMBERS" },
   { href: "#ecosystem", label: "ECOSYSTEMS" },
-  { href: "#community", label: "WALLOFLOVES" },
+  { href: "#community", label: "COMMUNITY" },
   { href: "#faq", label: "FAQ" },
 ];
 
 const socialLinks = [
-  { href: "https://www.instagram.com/superteammalaysia", label: "INSTAGRAM" },
   { href: "https://x.com/SuperteamMY", label: "X" },
   { href: "https://t.me/superteammy", label: "TELEGRAM" },
   { href: "https://lu.ma/superteammy", label: "LUMA" },
+  { href: "https://www.instagram.com/superteammalaysia", label: "INSTAGRAM" },
+  { href: "https://discord.gg/superteammy", label: "DISCORD" },
 ];
 
 function NavButton({

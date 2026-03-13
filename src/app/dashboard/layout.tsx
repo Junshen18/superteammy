@@ -20,6 +20,7 @@ import {
   PanelLeftClose,
   PanelLeft,
   BarChart3,
+  Heart,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
@@ -39,6 +40,7 @@ const adminLinks = [
   { href: "/dashboard/members", label: "Members", icon: Users, roles: ["super_admin"] as const },
   { href: "/dashboard/events", label: "Events", icon: Calendar, roles: ["super_admin", "admin"] as const },
   { href: "/dashboard/partners", label: "Partners", icon: Handshake, roles: ["super_admin", "admin"] as const },
+  { href: "/dashboard/community", label: "Community", icon: Heart, roles: ["super_admin", "admin"] as const },
   { href: "/dashboard/manage-perks", label: "Perks", icon: Gift, roles: ["super_admin", "admin"] as const },
   { href: "/dashboard/content", label: "Site Content", icon: FileText, roles: ["super_admin", "admin"] as const },
   { href: "/dashboard/metrics", label: "Dashboard Metrics", icon: BarChart3, roles: ["super_admin", "admin"] as const },
