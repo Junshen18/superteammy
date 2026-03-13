@@ -22,7 +22,6 @@ const BAR_DURATION_S =
 
 const LOADING_LOGO_W = 80;
 const LOADING_LOGO_H = 62;
-const HERO_LOGO_SIZE = 120;
 
 export function LoadingScreen({ onComplete }: { onComplete: () => void }) {
   const [phase, setPhase] = useState<
@@ -76,7 +75,7 @@ export function LoadingScreen({ onComplete }: { onComplete: () => void }) {
         setTargetPosition({
           x: heroCenterX - vw,
           y: heroCenterY - vh,
-          scale: HERO_LOGO_SIZE / LOADING_LOGO_W,
+          scale: rect.width / LOADING_LOGO_W,
         });
       } else {
         setTargetPosition({ x: 0, y: 0, scale: 1 });
