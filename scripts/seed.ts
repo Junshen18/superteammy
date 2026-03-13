@@ -245,7 +245,7 @@ const partners = [
 
 const stats = [
   {
-    label: "Community Members",
+    label: "Members",
     value: 500,
     suffix: "+",
     icon: "users",
