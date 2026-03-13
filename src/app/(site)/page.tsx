@@ -14,6 +14,7 @@ import {
   getPartners,
   getCommunityTweets,
   getFAQs,
+  getSiteContent,
 } from "@/lib/supabase/queries";
 
 export default async function Home() {
@@ -24,6 +25,7 @@ export default async function Home() {
     getPartners(),
     getCommunityTweets(),
     getFAQs(),
+    getSiteContent(),
   ]);
 
   const stats = results[0].status === "fulfilled" ? results[0].value : [];
@@ -32,27 +34,28 @@ export default async function Home() {
   const partners = results[3].status === "fulfilled" ? results[3].value : [];
   const communityTweets = results[4].status === "fulfilled" ? results[4].value : [];
   const faqs = results[5].status === "fulfilled" ? results[5].value : [];
+  const siteContent = results[6].status === "fulfilled" ? results[6].value : {};
 
   return (
     <>
-      <HeroSection />
+      <HeroSection content={siteContent.hero} />
       <div className="relative z-10 bg-background">
         <hr className="border-white/10 w-full mx-auto my-0" />
-        <WhoWeAreSection />
+        <WhoWeAreSection content={siteContent.who_we_are} />
         <hr className="border-white/10 w-full mx-auto my-0" />
-        <MissionSection />
+        <MissionSection content={siteContent.mission} />
         <hr className="border-white/10 w-full mx-auto my-0" />
-        <StatsSection stats={stats} />
+        <StatsSection stats={stats} content={siteContent.stats} />
         <hr className="border-white/10 w-full mx-auto my-0" />
-        <EventsSection events={events} />
+        <EventsSection events={events} content={siteContent.events} />
         <hr className="border-white/10 w-full mx-auto my-0" />
-        <MembersSpotlight profiles={profiles} />
+        <MembersSpotlight profiles={profiles} content={siteContent.members_spotlight} />
         <hr className="border-white/10 w-full mx-auto my-0" />
-        <PartnersSection partners={partners} />
+        <PartnersSection partners={partners} content={siteContent.partners} />
         <hr className="border-white/10 w-full mx-auto my-0" />
-        <WallOfLove communityTweets={communityTweets} />
+        <WallOfLove communityTweets={communityTweets} content={siteContent.wall_of_love} />
         <hr className="border-white/10 w-full mx-auto my-0" />
-        <FAQSection faqs={faqs} />
+        <FAQSection faqs={faqs} content={siteContent.faq_section} />
         <hr className="border-white/10 w-full mx-auto my-0 hidden md:block" />
 
       </div>
