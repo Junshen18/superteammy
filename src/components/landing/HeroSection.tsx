@@ -10,12 +10,13 @@ import { useLoading } from "@/contexts/LoadingContext";
 import { useHeroLogoRef } from "@/contexts/HeroLogoRefContext";
 
 const heroNavLinks = [
-  { href: "#about", label: "MISSIONS" },
+  { href: "#about", label: "ABOUT" },
+  { href: "#missions", label: "MISSIONS" },
   { href: "#impact", label: "IMPACTS" },
   { href: "#events", label: "EVENTS" },
-  { href: "/members", label: "MEMBERS" },
+  { href: "#members", label: "MEMBERS" },
   { href: "#ecosystem", label: "ECOSYSTEMS" },
-  { href: "#community", label: "WALLOFLOVES" },
+  { href: "#community", label: "COMMUNITY" },
   { href: "#faq", label: "FAQ" },
 ];
 

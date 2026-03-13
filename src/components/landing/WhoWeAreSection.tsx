@@ -140,7 +140,7 @@ export function WhoWeAreSection() {
   }, []);
 
   return (
-    <section ref={sectionRef} className="relative">
+    <section id="about" ref={sectionRef} className="relative">
       {/* Sticky Unicorn Studio background — stays in viewport while section scrolls */}
       <div className="sticky top-0 h-screen w-full">
         <div

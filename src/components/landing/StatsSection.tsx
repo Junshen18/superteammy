@@ -14,7 +14,7 @@ export function StatsSection({ stats }: StatsSectionProps) {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.2 });
 
   return (
-    <section className="relative py-24 md:py-32 overflow-hidden">
+    <section id="impact" className="relative py-24 md:py-32 overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 z-0">
         <Image

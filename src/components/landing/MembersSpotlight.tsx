@@ -56,7 +56,7 @@ export function MembersSpotlight({ profiles }: MembersSpotlightProps) {
     ));
 
   return (
-    <section className="py-24 overflow-hidden relative">
+    <section id="members" className="py-24 overflow-hidden relative">
       <div className="absolute inset-0 z-[-1]">
         <Image
           src="/images/member-sec-bg.png"

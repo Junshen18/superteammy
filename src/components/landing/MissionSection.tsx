@@ -165,7 +165,7 @@ export function MissionSection() {
 
   return (
     <section
-      id="about"
+      id="missions"
       ref={sectionRef}
       className="relative min-h-screen flex flex-col justify-center overflow-visible"
     >
