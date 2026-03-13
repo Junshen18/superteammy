@@ -53,7 +53,7 @@ export default async function Home() {
         <WallOfLove communityTweets={communityTweets} />
         <hr className="border-white/10 w-full mx-auto my-0" />
         <FAQSection faqs={faqs} />
-        <hr className="border-white/10 w-full mx-auto my-0" />
+        <hr className="border-white/10 w-full mx-auto my-0 hidden md:block" />
 
       </div>
     </>

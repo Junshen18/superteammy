@@ -44,7 +44,7 @@ export function EventsSection({ events }: EventsSectionProps) {
         ref={ref}
         className="relative w-screen left-1/2 -translate-x-1/2 h-screen min-h-[600px]"
       >
-        <div className="absolute inset-0 w-full h-full">
+        <div className="absolute inset-0 w-full h-full lg:block hidden">
           <motion.div
             initial={{ opacity: 0 }}
             animate={inView ? { opacity: 1 } : {}}
@@ -61,9 +61,26 @@ export function EventsSection({ events }: EventsSectionProps) {
             />
           </motion.div>
         </div>
+        <div className="absolute inset-0 w-full h-full lg:hidden block">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={inView ? { opacity: 1 } : {}}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="w-full h-full"
+          >
+            <DomeGallery
+              images={EVENT_IMAGES}
+              segments={25}
+              maxVerticalRotationDeg={10}
+              fit={1}
+              fitBasis="width"
+              overlayBlurColor="#080B0E"
+            />
+          </motion.div>
+        </div>
 
         {/* Title - absolute overlay on top */}
-        <div className="absolute flex justify-between inset-x-0 h-full top-20 pt-12 pb-32 md:pt-16 px-6 flex-col items-center z-10 pointer-events-none">
+        <div className="absolute flex justify-between inset-x-0 h-full lg:top-20 pt-12 lg:pb-32 md:pt-16 px-6 flex-col items-center z-10 pointer-events-none ">
           <div className="overflow-hidden" style={{ lineHeight: 1.25 }}>
             <motion.span
               className="block text-center will-change-transform"
@@ -76,7 +93,7 @@ export function EventsSection({ events }: EventsSectionProps) {
               }}
             >
               <h2
-                className="font-[family-name:var(--font-orbitron)] text-3xl md:text-4xl lg:text-5xl xl:text-7xl font-black text-white uppercase"
+                className="font-[family-name:var(--font-orbitron)] text-[32px] md:text-4xl lg:text-5xl xl:text-7xl font-black text-white uppercase"
                 style={{
                   textShadow:
                     "0 0 2px rgba(255,255,255,0.8), 0 0 4px rgba(255,255,255,0.4)",
@@ -87,7 +104,7 @@ export function EventsSection({ events }: EventsSectionProps) {
               </h2>
             </motion.span>
           </div>
-          <p className="text-[16px] text-white/90 max-w-3xl mx-auto">
+          <p className="text-xs md:text-[16px] text-white/90 max-w-3xl mx-auto text-center">
             Bringing the community together through meetups, workshops,
             hackathons, and builder gatherings.
           </p>
@@ -101,7 +118,7 @@ export function EventsSection({ events }: EventsSectionProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="flex justify-center mb-4"
+          className="flex justify-center lg:mb-4"
         >
           <div className="relative grid grid-cols-2 min-w-[220px] rounded-xl bg-white/6 border border-white/10 p-1 shadow-lg">
             {TABS.map((tab) => (
@@ -152,7 +169,7 @@ export function EventsSection({ events }: EventsSectionProps) {
                     <img
                       src="/images/event-sec.jpg"
                       alt="Kuala Lumpur cityscape with traditional shophouses and modern skyscrapers"
-                      className="w-full h-full min-h-[400px] object-cover object-center"
+                      className="w-full h-full min-h-[400px] object-cover object-center hidden lg:block"
                     />
                     <p className="absolute bottom-2 text-center w-full text-sm text-white/90 max-w-3xl mx-auto">
                       Illustration from{" "}
@@ -218,7 +235,7 @@ export function EventsSection({ events }: EventsSectionProps) {
             >
               <div className="relative">
                 <div
-                  className="max-h-[800px] overflow-y-auto overscroll-contain rounded-xl pr-1"
+                  className="max-h-[400px] md:max-h-[800px] overflow-y-auto overscroll-contain rounded-xl pr-1"
                   data-lenis-prevent
                   style={{ WebkitOverflowScrolling: "touch" }}
                 >
@@ -249,7 +266,7 @@ export function EventsSection({ events }: EventsSectionProps) {
                         <p className="text-sm font-medium text-white truncate group-hover:text-solana-purple transition-colors">
                           {event.title}
                         </p>
-                        <p className="text-xs text-muted-dark">
+                        <p className="text-xs text-muted-dark line-clamp-2">
                           {formatDate(event.date)} &middot; {event.location}
                         </p>
                       </div>

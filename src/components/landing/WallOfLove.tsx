@@ -15,17 +15,26 @@ export function WallOfLove({ communityTweets }: WallOfLoveProps) {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
 
   return (
-    <section id="community" className="relative py-24 md:py-32 overflow-hidden">
+    <section id="community" className="relative py-14 md:py-24 lg:py-32 overflow-hidden">
       {/* Background */}
-      <div className="absolute inset-0 z-0">
+      <div className="absolute inset-0 z-0 ">
         <Image
           src="/images/wol-bg.png"
           alt=""
           fill
-          className="object-cover object-center"
+          className="object-cover object-center hidden lg:block"
           unoptimized
           priority={false}
         />
+        <Image
+          src="/images/mobile-wol-bg.png"
+          alt=""
+          fill
+          className="object-cover object-center lg:hidden block"
+          unoptimized
+          priority={false}
+        />
+
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
@@ -36,7 +45,7 @@ export function WallOfLove({ communityTweets }: WallOfLoveProps) {
           transition={{ duration: 0.6 }}
           className="relative z-20 text-center mb-0"
         >
-          <h2 className="font-[family-name:var(--font-orbitron)] text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-7xl font-black text-white uppercase tracking-wide mb-4 flex flex-col items-center justify-center gap-0">
+          <h2 className="font-[family-name:var(--font-orbitron)] text-[32px] sm:text-3xl md:text-4xl lg:text-5xl xl:text-7xl font-black text-white uppercase tracking-wide mb-4 flex flex-col items-center justify-center gap-0">
             <div className="overflow-hidden" style={{ lineHeight: 1.25 }}>
               <motion.span
                 className="block text-center will-change-transform"
@@ -52,43 +61,74 @@ export function WallOfLove({ communityTweets }: WallOfLoveProps) {
               </motion.span>
             </div>
           </h2>
-          <p className="text-sm sm:text-base md:text-lg text-white/90 leading-relaxed max-w-3xl mx-auto">
+          <p className="text-[10px] sm:text-base md:text-lg text-white/90 leading-relaxed max-w-3xl mx-auto">
             Hear from our builders and leaders in the Malaysian Solana ecosystem!
           </p>
         </motion.div>
 
         {communityTweets.length > 0 ? (
           (() => {
-            const cols = 3; // lg: 3 columns
-            const chunkSize = Math.ceil(communityTweets.length / cols);
-            const columns = Array.from({ length: cols }, (_, i) =>
-              communityTweets.slice(i * chunkSize, (i + 1) * chunkSize)
+            const mobileCols = 2;
+            const desktopCols = 3;
+            const mobileChunkSize = Math.ceil(communityTweets.length / mobileCols);
+            const desktopChunkSize = Math.ceil(communityTweets.length / desktopCols);
+            const mobileColumns = Array.from({ length: mobileCols }, (_, i) =>
+              communityTweets.slice(i * mobileChunkSize, (i + 1) * mobileChunkSize)
+            );
+            const desktopColumns = Array.from({ length: desktopCols }, (_, i) =>
+              communityTweets.slice(i * desktopChunkSize, (i + 1) * desktopChunkSize)
             );
             return (
-              <div className="flex flex-col md:flex-row gap-4 mt-4 h-fit relative">
-                {columns.map((colTweets, colIndex) => (
-                  <div
-                    key={colIndex}
-                    className="flex flex-col gap-2 flex-1 min-w-0 max-h-[3000px]"
-                  >
-                    
-                    {colTweets.map((tweet, index) => (
-                      <motion.div
-                        key={tweet.id}
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={inView ? { opacity: 1, y: 0 } : {}}
-                        transition={{
-                          duration: 0.5,
-                          delay: (colIndex * chunkSize + index) * 0.1,
-                        }}
-                        className="flex justify-center h-fit [&_.react-tweet-theme]:!my-2 [&_.react-tweet-theme]:!bg-surface/50 [&_.react-tweet-theme]:!border [&_.react-tweet-theme]:!border-white/5 [&_.react-tweet-theme]:!rounded-2xl [&_.react-tweet-theme]:!overflow-hidden"
-                      >
-                        <Tweet id={tweet.tweet_id} />
-                      </motion.div>
-                    ))}
-                  </div>
-                ))}
-              </div>
+              <>
+                {/* Mobile: 2 columns, flex-row with flex-col inside each */}
+                <div className="flex flex-row gap-2 mt-4 md:hidden">
+                  {mobileColumns.map((colTweets, colIndex) => (
+                    <div
+                      key={colIndex}
+                      className="flex flex-col gap-2 flex-1 min-w-0 max-h-[1800px]"
+                    >
+                      {colTweets.map((tweet, index) => (
+                        <motion.div
+                          key={tweet.id}
+                          initial={{ opacity: 0, y: 30 }}
+                          animate={inView ? { opacity: 1, y: 0 } : {}}
+                          transition={{
+                            duration: 0.5,
+                            delay: (colIndex * mobileChunkSize + index) * 0.1,
+                          }}
+                          className="flex z-10 justify-center h-fit [&_.react-tweet-theme]:!my-0 [&_.react-tweet-theme]:!bg-surface/50 [&_.react-tweet-theme]:!border [&_.react-tweet-theme]:!border-white/5 [&_.react-tweet-theme]:!rounded-2xl [&_.react-tweet-theme]:!overflow-hidden"
+                        >
+                          <Tweet id={tweet.tweet_id} />
+                        </motion.div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+                {/* Tablet/Desktop: 3 columns */}
+                <div className="hidden md:flex flex-row gap-4 mt-4 h-fit relative">
+                  {desktopColumns.map((colTweets, colIndex) => (
+                    <div
+                      key={colIndex}
+                      className="flex flex-col gap-2 flex-1 min-w-0 max-h-[3000px]"
+                    >
+                      {colTweets.map((tweet, index) => (
+                        <motion.div
+                          key={tweet.id}
+                          initial={{ opacity: 0, y: 30 }}
+                          animate={inView ? { opacity: 1, y: 0 } : {}}
+                          transition={{
+                            duration: 0.5,
+                            delay: (colIndex * desktopChunkSize + index) * 0.1,
+                          }}
+                          className="flex z-10 justify-center h-fit [&_.react-tweet-theme]:!my-2 [&_.react-tweet-theme]:!bg-surface/50 [&_.react-tweet-theme]:!border [&_.react-tweet-theme]:!border-white/5 [&_.react-tweet-theme]:!rounded-2xl [&_.react-tweet-theme]:!overflow-hidden"
+                        >
+                          <Tweet id={tweet.tweet_id} />
+                        </motion.div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </>
             );
           })()
         ) : (

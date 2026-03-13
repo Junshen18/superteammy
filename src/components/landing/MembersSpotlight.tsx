@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { SectionHeading } from "@/components/ui/SectionHeading";
 import { MemberProfileCard } from "@/components/members/MemberProfileCard";
 import type { Profile } from "@/lib/types";
 import Image from "next/image";
@@ -19,7 +18,14 @@ const CARD_SCALE = 0.9;
 const CARD_WIDTH = Math.round(320 * CARD_SCALE); // 272
 
 export function MembersSpotlight({ profiles }: MembersSpotlightProps) {
-  const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
+  const { ref: mobileHeaderRef, inView: mobileInView } = useInView({
+    triggerOnce: true,
+    threshold: 0.1,
+  });
+  const { ref: desktopHeaderRef, inView: desktopInView } = useInView({
+    triggerOnce: true,
+    threshold: 0.1,
+  });
 
   // Row 1: from front (index 0, 1, 2, ...). Row 2: from back (last, second-last, ...)
   const { row1, row2 } = useMemo(
@@ -40,7 +46,7 @@ export function MembersSpotlight({ profiles }: MembersSpotlightProps) {
         key={`${profile.id}-${copyId}-${i}`}
         initial={{ opacity: 0, y: 20, scale: CARD_SCALE }}
         animate={
-          inView
+          desktopInView
             ? { opacity: 1, y: 0, scale: CARD_SCALE }
             : { opacity: 0, y: 20, scale: CARD_SCALE }
         }
@@ -56,23 +62,110 @@ export function MembersSpotlight({ profiles }: MembersSpotlightProps) {
     ));
 
   return (
-    <section id="members" className="py-24 overflow-hidden relative">
+    <section id="members" className="lg:py-24 py-12 overflow-hidden relative">
       <div className="absolute inset-0 z-[-1]">
         <Image
           src="/images/member-sec-bg.png"
           alt=""
           fill
-          className="object-cover object-center"
+          className="object-cover object-center hidden lg:block"
+          unoptimized
+          priority={false}
+        />
+        <Image
+          src="/images/mobile-member-bg.png"
+          alt=""
+          fill
+          className="object-cover object-center block lg:hidden"
           unoptimized
           priority={false}
         />
       </div>
-      <div className="mx-20 flex flex-col gap-1 shadow-lg bg-background rounded-[16px] p-8 px-20">
+      <div className="absolute left-0 top-0 bottom-0 w-1/3 lg:hidden z-[1] bg-linear-to-r from-background/80 to-background/0 pointer-events-none" />
+      <div className="absolute right-0 top-0 bottom-0 w-1/3 lg:hidden z-[1] bg-linear-to-l from-background/80 to-background/0 pointer-events-none" />
+
+      {/* Mobile: no border div, single carousel - only visible below md (768px) */}
+      <div className="md:hidden flex flex-col gap-6 px-4 z-10">
+        <motion.div
+          ref={mobileHeaderRef}
+          initial={{ opacity: 0, y: 30 }}
+          animate={mobileInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6 }}
+          className="relative z-20 text-center mb-0"
+        >
+          <h2 className="font-[family-name:var(--font-orbitron)] text-[32px] font-black text-white uppercase tracking-wide mb-4 flex flex-col items-center justify-center gap-0">
+            <div className="overflow-hidden" style={{ lineHeight: 1.25 }}>
+              <motion.span
+                className="block text-center will-change-transform"
+                style={{ lineHeight: 1.25 }}
+                initial={{ y: 60 }}
+                animate={mobileInView ? { y: 0 } : { y: 60 }}
+                transition={{
+                  duration: 0.9,
+                  ease: [0.77, 0, 0.175, 1],
+                }}
+              >
+                Member Spotlight
+              </motion.span>
+            </div>
+          </h2>
+          <p className="text-[10px] text-white/90 leading-relaxed max-w-3xl mx-auto px-5 md:px-0">
+            Meet the talented builders driving the Solana ecosystem in Malaysia
+          </p>
+        </motion.div>
+
+        <div className="-mx-4 overflow-visible relative">
+          
+          <div className="marquee-track marquee-mobile-ltr flex gap-4 w-max">
+            <div className="flex gap-4 shrink-0">
+              {profiles.map((profile, i) => (
+                <div
+                  key={`${profile.id}-m0-${i}`}
+                  className="shrink-0 flex justify-center"
+                  style={{ width: 280 }}
+                >
+                  <MemberProfileCard profile={profile} index={i} />
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-4 shrink-0">
+              {profiles.map((profile, i) => (
+                <div
+                  key={`${profile.id}-m1-${i}`}
+                  className="shrink-0 flex justify-center"
+                  style={{ width: 280 }}
+                >
+                  <MemberProfileCard profile={profile} index={i} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="text-center z-10">
+          <Link
+            href="/members"
+            className="group relative overflow-hidden inline-flex items-center justify-center gap-2 min-h-[40px] bg-[#20211B]/20 border border-white/10 px-6 py-3 rounded-[8px] text-sm font-semibold font-[family-name:var(--font-orbitron)] transition-colors duration-300 hover:border-white cursor-pointer"
+          >
+            <span
+              className="absolute inset-0 z-0 origin-left scale-x-0 bg-white transition-transform duration-300 ease-out group-hover:scale-x-100"
+              aria-hidden
+            />
+            <span className="relative z-10 flex items-center gap-2 pointer-events-none transition-colors duration-300 text-white group-hover:text-black">
+              View All Members
+              <ArrowRight className="w-4 h-4" />
+            </span>
+          </Link>
+        </div>
+      </div>
+
+      {/* Tablet & Desktop: bordered wrapper + marquee (unchanged) */}
+      <div className="hidden md:flex mx-20 flex-col gap-1 shadow-lg bg-background rounded-[16px] p-8 px-20">
         {/* Header */}
         <motion.div
-          ref={ref}
+          ref={desktopHeaderRef}
           initial={{ opacity: 0, y: 30 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
+          animate={desktopInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
           className="relative z-20 text-center mb-0"
         >
@@ -82,7 +175,7 @@ export function MembersSpotlight({ profiles }: MembersSpotlightProps) {
                 className="block text-center will-change-transform"
                 style={{ lineHeight: 1.25 }}
                 initial={{ y: 60 }}
-                animate={inView ? { y: 0 } : { y: 60 }}
+                animate={desktopInView ? { y: 0 } : { y: 60 }}
                 transition={{
                   duration: 0.9,
                   ease: [0.77, 0, 0.175, 1],
@@ -97,7 +190,7 @@ export function MembersSpotlight({ profiles }: MembersSpotlightProps) {
           </p>
         </motion.div>
 
-        <div ref={ref} className="relative -mx-6 md:-mx-8 overflow-visible ">
+        <div className="relative -mx-6 md:-mx-8 overflow-visible ">
           {/* Row 1: left to right (content scrolls left) */}
           <div className="marquee-row group -mb-5">
             <div className="marquee-track marquee-ltr">

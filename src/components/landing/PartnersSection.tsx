@@ -10,9 +10,13 @@ interface PartnersSectionProps {
 
 export function PartnersSection({ partners }: PartnersSectionProps) {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
+  const { ref: partnersRef, inView: partnersInView } = useInView({
+    triggerOnce: true,
+    threshold: 0.1,
+  });
 
   return (
-    <section id="ecosystem" className="py-24 md:py-32 bg-background">
+    <section id="ecosystem" className="py-14 md:py-24 lg:py-32 bg-background">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <motion.div
           ref={ref}
@@ -21,7 +25,7 @@ export function PartnersSection({ partners }: PartnersSectionProps) {
           transition={{ duration: 0.6 }}
           className="relative z-20 text-center mb-0"
         >
-          <h2 className="font-[family-name:var(--font-orbitron)] text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-7xl font-black text-white uppercase tracking-wide mb-4 flex flex-col items-center justify-center gap-0">
+          <h2 className="font-[family-name:var(--font-orbitron)] text-[32px] sm:text-3xl md:text-4xl lg:text-5xl xl:text-7xl font-black text-white uppercase tracking-wide md:mb-4 mb-2 flex flex-col items-center justify-center gap-0">
             <div className="overflow-hidden" style={{ lineHeight: 1.25 }}>
               <motion.span
                 className="block text-center will-change-transform"
@@ -37,13 +41,16 @@ export function PartnersSection({ partners }: PartnersSectionProps) {
               </motion.span>
             </div>
           </h2>
-          <p className="text-sm sm:text-base md:text-lg text-white/90 leading-relaxed max-w-3xl mx-auto">
+          <p className="text-[10px] sm:text-base md:text-lg text-white/90 leading-relaxed max-w-3xl mx-auto">
             Partners that support the Malaysian builder ecosystem through tools, mentorship, and opportunities.
           </p>
         </motion.div>
 
-        <div className="flex flex-col items-center mt-16">
-          <div className="flex flex-wrap justify-center gap-4 md:gap-6 w-full max-w-6xl mx-auto">
+        <div className="flex flex-col items-center lg:mt-16 mt-8">
+          <div
+            ref={partnersRef}
+            className="flex flex-wrap justify-center gap-4 md:gap-6 w-full max-w-6xl mx-auto"
+          >
             {partners.map((partner, index) => (
               <motion.a
                 key={partner.id}
@@ -51,8 +58,7 @@ export function PartnersSection({ partners }: PartnersSectionProps) {
                 target="_blank"
                 rel="noopener noreferrer"
                 initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true, amount: 0.2 }}
+                animate={partnersInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.5, delay: index * 0.05 }}
                 className="group flex items-center justify-center h-[100px] p-4 rounded-[8px] bg-[#222222] border border-white/10 hover:border-white/20 hover:brightness-110 transition-all duration-300 overflow-hidden shrink-0 w-[calc(50%-0.5rem)] sm:w-[calc(33.333%-0.67rem)] md:w-[calc(25%-0.75rem)] lg:w-[calc(20%-1.2rem)]"
               >
@@ -70,7 +76,7 @@ export function PartnersSection({ partners }: PartnersSectionProps) {
               </motion.a>
             ))}
           </div>
-          <span className="relative z-10 flex items-center gap-2 pointer-events-none transition-colors duration-300 text-white/50 text-sm font-semibold font-[family-name:var(--font-orbitron)] mt-12">
+          <span className="relative z-10 flex items-center gap-2 pointer-events-none transition-colors duration-300 text-white/50 lg:text-sm text-[10px] font-semibold font-[family-name:var(--font-orbitron)] lg:mt-12 mt-8">
             More Partners...
           </span>
         </div>
