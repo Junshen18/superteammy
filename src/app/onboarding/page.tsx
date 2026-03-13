@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { MultiSelect, type MultiSelectOption } from "@/components/ui/multi-select";
+import { UnicornBackground } from "@/components/ui/UnicornBackground";
+import { WelcomeMessage } from "@/components/onboarding/WelcomeMessage";
 import { cn } from "@/lib/utils";
 
 const STEPS = ["Basic Info", "Professional", "Skills", "Social Links", "About You"];
@@ -24,6 +26,8 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   // Form state
   const [nickname, setNickname] = useState("");
@@ -126,6 +130,11 @@ export default function OnboardingPage() {
 
   async function handleComplete() {
     if (!userId) return;
+    if (!twitterUrl.trim()) {
+      setValidationError("Twitter / X is required");
+      return;
+    }
+    setValidationError(null);
     setIsSaving(true);
 
     const { error: profileErr } = await supabase
@@ -160,7 +169,8 @@ export default function OnboardingPage() {
       saveJunction("profile_subskills", "subskill_id", selectedSubskills),
     ]);
 
-    router.push("/dashboard");
+    setIsSaving(false);
+    setShowWelcome(true);
   }
 
   async function saveJunction(table: string, foreignKey: string, items: MultiSelectOption[]) {
@@ -175,17 +185,75 @@ export default function OnboardingPage() {
     await supabase.from(table).insert(rows);
   }
 
+  function validateStep(stepIndex: number): boolean {
+    setValidationError(null);
+    if (stepIndex === 0) {
+      if (!nickname.trim()) {
+        setValidationError("Nickname is required");
+        return false;
+      }
+      if (!realName.trim()) {
+        setValidationError("Real name is required");
+        return false;
+      }
+      if (!avatarUrl) {
+        setValidationError("Profile picture is required");
+        return false;
+      }
+    } else if (stepIndex === 1) {
+      if (selectedRoles.length === 0) {
+        setValidationError("Please select at least one role");
+        return false;
+      }
+      if (selectedCompanies.length === 0) {
+        setValidationError("Please select at least one company");
+        return false;
+      }
+      if (!bio.trim()) {
+        setValidationError("Bio is required");
+        return false;
+      }
+    } else if (stepIndex === 2) {
+      if (selectedSkills.length === 0) {
+        setValidationError("Please select at least one skill");
+        return false;
+      }
+    } else if (stepIndex === 3) {
+      if (!twitterUrl.trim()) {
+        setValidationError("Twitter / X is required");
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function handleNext() {
+    if (validateStep(step)) {
+      setStep(step + 1);
+    }
+  }
+
+  function handleBack() {
+    setValidationError(null);
+    setStep(step - 1);
+  }
+
   if (isLoading) {
     return (
-      <div className="dark min-h-screen flex items-center justify-center" style={{ backgroundColor: "#080B0E" }}>
+      <div className="dark min-h-screen flex items-center justify-center relative" style={{ backgroundColor: "#080B0E" }}>
         <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
+  if (showWelcome) {
+    return <WelcomeMessage nickname={nickname} />;
+  }
+
   return (
-    <div className="dark min-h-screen flex flex-col items-center justify-center px-6 py-12" style={{ backgroundColor: "#080B0E" }}>
-      <div className="w-full max-w-lg">
+    <div className="dark min-h-screen flex flex-col items-center justify-center px-6 py-12 relative">
+      <UnicornBackground />
+      <div className="relative z-10 w-full max-w-lg">
         <div className="flex justify-center mb-8">
           <Image src="/superteam.svg" alt="Superteam Malaysia" width={160} height={32} className="h-8 w-auto" />
         </div>
@@ -387,18 +455,23 @@ export default function OnboardingPage() {
               </div>
             )}
 
+            {/* Validation error */}
+            {validationError && (
+              <p className="mt-4 text-sm text-red-500">{validationError}</p>
+            )}
+
             {/* Navigation */}
             <div className="flex items-center justify-between mt-6 pt-4 border-t border-white/5">
               <Button
                 variant="outline"
-                onClick={() => setStep(step - 1)}
+                onClick={handleBack}
                 disabled={step === 0}
                 className="cursor-pointer bg-[#080B0E] border-border/50 hover:bg-[#171717] hover:text-white"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" /> Back
               </Button>
               {step < STEPS.length - 1 ? (
-                <Button onClick={() => setStep(step + 1)} className="cursor-pointer">
+                <Button onClick={handleNext} className="cursor-pointer">
                   Next <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               ) : (
