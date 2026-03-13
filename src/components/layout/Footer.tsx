@@ -226,7 +226,7 @@ export function Footer() {
                                   ? "noopener noreferrer"
                                   : undefined
                               }
-                              className="text-sm text-white hover:text-white transition-colors"
+                              className="text-sm text-white hover:text-white/80 transition-colors"
                             >
                               {link.label}
                             </a>
