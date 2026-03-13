@@ -2,7 +2,7 @@
 
 > The digital headquarters for Solana builders in Malaysia — built with Next.js 16, Supabase, and modern web animations.
 
-**Live:** [my.superteam.fun](https://my.superteam.fun)
+**Live:** [superteammy-three.vercel.app](https://superteammy-three.vercel.app/)
 
 ---
 
