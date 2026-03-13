@@ -5,39 +5,23 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import type { SiteContent, MissionPillar } from "@/lib/types";
 gsap.registerPlugin(ScrollTrigger);
 
-const pillars = [
-  {
-    title: "LEARN",
-    image: "/images/learn.jpeg",
-    description:
-      "Learn through hands-on education, workshops, and mentorship from experienced builders across the ecosystem.",
-  },
-  {
-    title: "BUILD",
-    image: "/images/build.jpeg",
-    description:
-      "Build alongside the community through hackathons, collaborative events, and real projects that turn ideas into production-ready products.",
-  },
-  {
-    title: "GROW",
-    image: "/images/grow.jpeg",
-    description:
-      "Grow your career and network through strong ecosystem connections and long-term opportunities, locally and globally.",
-  },
-  {
-    title: "EARN",
-    image: "/images/earn.jpeg",
-    description:
-      "Earn through grants, funding access, jobs, and bounties by contributing to impactful Web3 projects.",
-  },
+const DEFAULT_PILLARS: MissionPillar[] = [
+  { title: "LEARN", image_url: "/images/learn.jpeg", description: "Learn through hands-on education, workshops, and mentorship from experienced builders across the ecosystem." },
+  { title: "BUILD", image_url: "/images/build.jpeg", description: "Build alongside the community through hackathons, collaborative events, and real projects that turn ideas into production-ready products." },
+  { title: "GROW", image_url: "/images/grow.jpeg", description: "Grow your career and network through strong ecosystem connections and long-term opportunities, locally and globally." },
+  { title: "EARN", image_url: "/images/earn.jpeg", description: "Earn through grants, funding access, jobs, and bounties by contributing to impactful Web3 projects." },
 ];
 
 const COLLAPSED_WIDTH = 200;
 const EXPANDED_MIN_WIDTH = 420;
 
-export function MissionSection() {
+export function MissionSection({ content }: { content?: SiteContent | null }) {
+  const pillars = ((content?.content as { pillars?: MissionPillar[] })?.pillars ?? DEFAULT_PILLARS) as MissionPillar[];
+  const titleLine1 = content?.title || "Empowering Malaysia's";
+  const titleLine2 = content?.subtitle || "Solana Builders";
   const sectionRef = useRef<HTMLElement>(null);
   const headingRef = useRef<HTMLDivElement>(null);
   const pillarsContainerRef = useRef<HTMLDivElement>(null);
@@ -233,7 +217,7 @@ export function MissionSection() {
           >
             <div className="absolute inset-0">
               <Image
-                src={pillar.image}
+                src={pillar.image_url}
                 alt={pillar.title}
                 fill
                 className="object-cover object-center"
@@ -265,7 +249,7 @@ export function MissionSection() {
           >
             <div className="absolute inset-0">
               <Image
-                src={pillar.image}
+                src={pillar.image_url}
                 alt={pillar.title}
                 fill
                 className="object-cover object-center"
@@ -301,7 +285,7 @@ export function MissionSection() {
             {/* Image */}
             <div className="absolute inset-0">
               <Image
-                src={pillar.image}
+                src={pillar.image_url}
                 alt={pillar.title}
                 fill
                 className="object-cover object-center"

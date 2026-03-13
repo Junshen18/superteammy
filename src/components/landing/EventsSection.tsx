@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { Calendar, ArrowUpRight } from "lucide-react";
 import { DomeGallery } from "@/components/ui/DomeGallery";
-import type { Event } from "@/lib/types";
+import type { Event, SiteContent } from "@/lib/types";
 
 const TABS = [
   { id: "past" as const, label: "Past" },
@@ -28,11 +28,19 @@ function formatDate(dateStr: string) {
 
 interface EventsSectionProps {
   events: Event[];
+  content?: SiteContent | null;
 }
 
 const PAST_EVENTS_LIMIT = 50;
 
-export function EventsSection({ events }: EventsSectionProps) {
+const DEFAULT_EVENTS = {
+  title: "Our Events",
+  description: "Bringing the community together through meetups, workshops, hackathons, and builder gatherings.",
+};
+
+export function EventsSection({ events, content }: EventsSectionProps) {
+  const title = content?.title || DEFAULT_EVENTS.title;
+  const description = content?.description || DEFAULT_EVENTS.description;
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
   const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming");
   const pastEvents = events.filter((e) => !e.is_upcoming).slice(0, PAST_EVENTS_LIMIT);
@@ -100,13 +108,12 @@ export function EventsSection({ events }: EventsSectionProps) {
                   WebkitTextStroke: "1px rgba(255,255,255,0.3)",
                 }}
               >
-                Our Events
+                {title}
               </h2>
             </motion.span>
           </div>
           <p className="text-xs md:text-[16px] text-white/90 max-w-3xl mx-auto text-center">
-            Bringing the community together through meetups, workshops,
-            hackathons, and builder gatherings.
+            {description}
           </p>
         </div>
       </div>

@@ -4,14 +4,22 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { Tweet } from "react-tweet";
-import type { CommunityTweet } from "@/lib/types";
+import type { CommunityTweet, SiteContent } from "@/lib/types";
 import "react-tweet/theme.css";
 
 interface WallOfLoveProps {
   communityTweets: CommunityTweet[];
+  content?: SiteContent | null;
 }
 
-export function WallOfLove({ communityTweets }: WallOfLoveProps) {
+const DEFAULT_WOL = {
+  title: "Wall of Love",
+  description: "Hear from our builders and leaders in the Malaysian Solana ecosystem!",
+};
+
+export function WallOfLove({ communityTweets, content }: WallOfLoveProps) {
+  const title = content?.title || DEFAULT_WOL.title;
+  const description = content?.description || DEFAULT_WOL.description;
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
 
   return (
@@ -57,12 +65,12 @@ export function WallOfLove({ communityTweets }: WallOfLoveProps) {
                   ease: [0.77, 0, 0.175, 1],
                 }}
               >
-                Wall of Love
+                {title}
               </motion.span>
             </div>
           </h2>
           <p className="text-[10px] sm:text-base md:text-lg text-white/90 leading-relaxed max-w-3xl mx-auto">
-            Hear from our builders and leaders in the Malaysian Solana ecosystem!
+            {description}
           </p>
         </motion.div>
 

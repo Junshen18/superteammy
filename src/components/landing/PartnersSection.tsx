@@ -2,13 +2,21 @@
 
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
-import type { Partner } from "@/lib/types";
+import type { Partner, SiteContent } from "@/lib/types";
 
 interface PartnersSectionProps {
   partners: Partner[];
+  content?: SiteContent | null;
 }
 
-export function PartnersSection({ partners }: PartnersSectionProps) {
+const DEFAULT_PARTNERS = {
+  title: "Ecosystem Partners",
+  description: "Partners that support the Malaysian builder ecosystem through tools, mentorship, and opportunities.",
+};
+
+export function PartnersSection({ partners, content }: PartnersSectionProps) {
+  const title = content?.title || DEFAULT_PARTNERS.title;
+  const description = content?.description || DEFAULT_PARTNERS.description;
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
   const { ref: partnersRef, inView: partnersInView } = useInView({
     triggerOnce: true,
@@ -37,12 +45,12 @@ export function PartnersSection({ partners }: PartnersSectionProps) {
                   ease: [0.77, 0, 0.175, 1],
                 }}
               >
-                Ecosystem Partners
+                {title}
               </motion.span>
             </div>
           </h2>
           <p className="text-[10px] sm:text-base md:text-lg text-white/90 leading-relaxed max-w-3xl mx-auto">
-            Partners that support the Malaysian builder ecosystem through tools, mentorship, and opportunities.
+            {description}
           </p>
         </motion.div>
 

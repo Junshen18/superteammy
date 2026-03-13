@@ -3,6 +3,7 @@
 import { useEffect, useRef, useMemo } from "react";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import type { MotionValue } from "framer-motion";
+import type { SiteContent } from "@/lib/types";
 function useElementScrollProgress(
   ref: React.RefObject<HTMLDivElement | null>,
   revealFraction = 0.15
@@ -29,7 +30,7 @@ function useElementScrollProgress(
   return progress;
 }
 
-const CONTENT =
+const DEFAULT_CONTENT =
   "Superteam Malaysia is a gateway for Malaysian builders to step into the global Web3 ecosystem — learning together, building real products, earning through meaningful opportunities, and growing as a community.";
 
 function Word({
@@ -72,7 +73,8 @@ function ScrollRevealText({
   );
 }
 
-export function WhoWeAreSection() {
+export function WhoWeAreSection({ content }: { content?: SiteContent | null }) {
+  const text = content?.description || DEFAULT_CONTENT;
   const sectionRef = useRef<HTMLElement>(null);
   const scrollRevealRef = useRef<HTMLDivElement>(null);
   const scriptLoaded = useRef(false);
@@ -155,7 +157,7 @@ export function WhoWeAreSection() {
         <div className="sticky top-0 h-screen flex items-center justify-center px-6 z-10 pt-[65vh]">
           <div className="max-w-7xl text-center">
             <ScrollRevealText
-              text={CONTENT}
+              text={text}
               progress={scrollYProgress}
               className="font-[family-name:var(--font-orbitron)] text-base md:text-lg lg:text-3xl xl:text-4xl text-white font-black leading-tight"
             />

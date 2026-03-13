@@ -4,13 +4,21 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
-import type { Stat } from "@/lib/types";
+import type { Stat, SiteContent } from "@/lib/types";
 
 interface StatsSectionProps {
   stats: Stat[];
+  content?: SiteContent | null;
 }
 
-export function StatsSection({ stats }: StatsSectionProps) {
+const DEFAULT_STATS = {
+  title: "Powered by Builders",
+  description: "From local meetups to global opportunities, our community continues to grow through shipped projects, hosted events, and meaningful contributions across the ecosystem.",
+};
+
+export function StatsSection({ stats, content }: StatsSectionProps) {
+  const title = content?.title || DEFAULT_STATS.title;
+  const description = content?.description || DEFAULT_STATS.description;
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.2 });
 
   return (
@@ -48,14 +56,12 @@ export function StatsSection({ stats }: StatsSectionProps) {
                   ease: [0.77, 0, 0.175, 1],
                 }}
               >
-                Powered by Builders
+                {title}
               </motion.span>
             </div>
           </h2>
           <p className="text-[10px] px-3 sm:text-base md:text-lg text-white/90 leading-relaxed max-w-3xl mx-auto">
-            From local meetups to global opportunities, our community continues
-            to grow through shipped projects, hosted events, and meaningful
-            contributions across the ecosystem.
+            {description}
           </p>
         </motion.div>
 

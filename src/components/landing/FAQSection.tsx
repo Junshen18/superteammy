@@ -4,13 +4,17 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { AccordionItem } from "@/components/ui/Accordion";
-import type { FAQ } from "@/lib/types";
+import type { FAQ, SiteContent } from "@/lib/types";
 
 interface FAQSectionProps {
   faqs: FAQ[];
+  content?: SiteContent | null;
 }
 
-export function FAQSection({ faqs }: FAQSectionProps) {
+const DEFAULT_FAQ_TITLE = "HAVE QUESTIONS THAT NEED ANSWER?";
+
+export function FAQSection({ faqs, content }: FAQSectionProps) {
+  const title = content?.title || DEFAULT_FAQ_TITLE;
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.2 });
 
   return (
@@ -49,7 +53,7 @@ export function FAQSection({ faqs }: FAQSectionProps) {
                   ease: [0.77, 0, 0.175, 1],
                 }}
               >
-                HAVE QUESTIONS THAT NEED ANSWER?
+                {title}
               </motion.span>
             </div>
           </h2>

@@ -6,18 +6,26 @@ import { useInView } from "react-intersection-observer";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { MemberProfileCard } from "@/components/members/MemberProfileCard";
-import type { Profile } from "@/lib/types";
+import type { Profile, SiteContent } from "@/lib/types";
 import Image from "next/image";
 
 interface MembersSpotlightProps {
   profiles: Profile[];
+  content?: SiteContent | null;
 }
 
 const CARD_SCALE = 0.9;
 // Card base width 320px; scaled visual width = 320*0.85. Use that so cards stick close.
 const CARD_WIDTH = Math.round(320 * CARD_SCALE); // 272
 
-export function MembersSpotlight({ profiles }: MembersSpotlightProps) {
+const DEFAULT_MEMBERS = {
+  title: "Member Spotlight",
+  description: "Meet the talented builders driving the Solana ecosystem in Malaysia",
+};
+
+export function MembersSpotlight({ profiles, content }: MembersSpotlightProps) {
+  const title = content?.title || DEFAULT_MEMBERS.title;
+  const description = content?.description || DEFAULT_MEMBERS.description;
   const { ref: mobileHeaderRef, inView: mobileInView } = useInView({
     triggerOnce: true,
     threshold: 0.1,
@@ -105,12 +113,12 @@ export function MembersSpotlight({ profiles }: MembersSpotlightProps) {
                   ease: [0.77, 0, 0.175, 1],
                 }}
               >
-                Member Spotlight
+                {title}
               </motion.span>
             </div>
           </h2>
           <p className="text-[10px] text-white/90 leading-relaxed max-w-3xl mx-auto px-5 md:px-0">
-            Meet the talented builders driving the Solana ecosystem in Malaysia
+            {description}
           </p>
         </motion.div>
 
@@ -181,12 +189,12 @@ export function MembersSpotlight({ profiles }: MembersSpotlightProps) {
                   ease: [0.77, 0, 0.175, 1],
                 }}
               >
-                Member Spotlight
+                {title}
               </motion.span>
             </div>
           </h2>
           <p className="text-sm sm:text-base md:text-lg text-white/90 leading-relaxed max-w-3xl mx-auto">
-            Meet the talented builders driving the Solana ecosystem in Malaysia
+            {description}
           </p>
         </motion.div>
 
