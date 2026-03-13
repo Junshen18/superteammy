@@ -60,7 +60,7 @@ export function PartnersSection({ partners }: PartnersSectionProps) {
                   <img
                     src={partner.logo_url}
                     alt=""
-                    className="w-full h-full max-w-[80%] max-h-[100%] object-contain"
+                    className="w-full h-full max-w-[80%] max-h-[100%] object-contain hover:scale-110 transition-all duration-300"
                   />
                 ) : (
                   <span className="text-2xl font-bold text-white/40 group-hover:text-white/60 transition-colors">
@@ -70,7 +70,7 @@ export function PartnersSection({ partners }: PartnersSectionProps) {
               </motion.a>
             ))}
           </div>
-          <span className="relative z-10 flex items-center gap-2 pointer-events-none transition-colors duration-300 text-white/50 group-hover:text-black text-sm font-semibold font-[family-name:var(--font-orbitron)] mt-12">
+          <span className="relative z-10 flex items-center gap-2 pointer-events-none transition-colors duration-300 text-white/50 text-sm font-semibold font-[family-name:var(--font-orbitron)] mt-12">
             More Partners...
           </span>
         </div>

@@ -37,23 +37,23 @@ export default async function Home() {
     <>
       <HeroSection />
       <div className="relative z-10 bg-background">
-        <hr className="border-white/20 w-full mx-auto my-0" />
+        <hr className="border-white/10 w-full mx-auto my-0" />
         <WhoWeAreSection />
-        <hr className="border-white/20 w-full mx-auto my-0" />
+        <hr className="border-white/10 w-full mx-auto my-0" />
         <MissionSection />
-        <hr className="border-white/20 w-full mx-auto my-0" />
+        <hr className="border-white/10 w-full mx-auto my-0" />
         <StatsSection stats={stats} />
-        <hr className="border-white/20 w-full mx-auto my-0" />
+        <hr className="border-white/10 w-full mx-auto my-0" />
         <EventsSection events={events} />
-        <hr className="border-white/20 w-full mx-auto my-0" />
+        <hr className="border-white/10 w-full mx-auto my-0" />
         <MembersSpotlight profiles={profiles} />
-        <hr className="border-white/20 w-full mx-auto my-0" />
+        <hr className="border-white/10 w-full mx-auto my-0" />
         <PartnersSection partners={partners} />
-        <hr className="border-white/20 w-full mx-auto my-0" />
+        <hr className="border-white/10 w-full mx-auto my-0" />
         <WallOfLove communityTweets={communityTweets} />
-        <hr className="border-white/20 w-full mx-auto my-0" />
+        <hr className="border-white/10 w-full mx-auto my-0" />
         <FAQSection faqs={faqs} />
-        <hr className="border-white/20 w-full mx-auto my-0" />
+        <hr className="border-white/10 w-full mx-auto my-0" />
 
       </div>
     </>

@@ -318,7 +318,7 @@ export function HeroSection() {
 
         {/* Bottom: CTA buttons + Subtitle */}
         <div className="flex items-center justify-between w-full gap-4">
-          <CtaButton href="https://t.me/superteammy" text="CONNECT" external />
+          <CtaButton href="/dashboard" text="CONNECT" />
         <div className="flex-1 min-w-0 h-px bg-white/20" />
 
 
@@ -328,7 +328,7 @@ export function HeroSection() {
         <div className="flex-1 min-w-0 h-px bg-white/20" />
 
 
-          <CtaButton href="#about" text="EXPLORE" />
+          <CtaButton href="https://t.me/superteammy" text="EXPLORE" external />
         </div>
       </div>
     </section>

@@ -53,7 +53,7 @@ export function WallOfLove({ communityTweets }: WallOfLoveProps) {
             </div>
           </h2>
           <p className="text-sm sm:text-base md:text-lg text-white/90 leading-relaxed max-w-3xl mx-auto">
-            Hear from builders and leaders in the Malaysian Web3 ecosystem
+            Hear from our builders and leaders in the Malaysian Solana ecosystem!
           </p>
         </motion.div>
 
@@ -109,6 +109,14 @@ export function WallOfLove({ communityTweets }: WallOfLoveProps) {
           </div>
         )}
       </div>
+
+      {/* Bottom gradient fade */}
+      <div
+        className="absolute bottom-0 left-0 right-0 h-[500px] z-20 pointer-events-none"
+        style={{
+          background: "linear-gradient(to top, #080B0E, #080B0E00)",
+        }}
+      />
     </section>
   );
 }
