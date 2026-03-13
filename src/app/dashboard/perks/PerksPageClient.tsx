@@ -75,11 +75,16 @@ export function PerksPageClient({ perks }: PerksPageClientProps) {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2  gap-4">
-            {perks.map((perk) => (
-              <PerkCard key={perk.id} perk={perk} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2  gap-4">
+              {perks.map((perk) => (
+                <PerkCard key={perk.id} perk={perk} />
+              ))}
+            </div>
+            <p className="mt-8 text-center text-sm text-muted-foreground">
+              More perks coming soon…
+            </p>
+          </>
         )}
       </section>
 
