@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { useScrambleText } from "@/hooks/useScrambleText";
 import { useLoading } from "@/contexts/LoadingContext";
 import { useHeroLogoRef } from "@/contexts/HeroLogoRefContext";
+import type { SiteContent } from "@/lib/types";
 
 const heroNavLinks = [
   { href: "#about", label: "ABOUT" },
@@ -100,7 +101,7 @@ function CtaButton({
   };
 
   const baseClass =
-    "group relative shrink-0 w-[145px] min-w-[145px] rounded-sm text-center overflow-hidden border border-white/40 px-5 py-2.5 font-[family-name:var(--font-orbitron)] text-sm tracking-widest text-white font-medium uppercase transition-colors duration-300 hover:border-white";
+    "group relative shrink-0 w-[145px] min-w-[145px] bg-[#20211B]/50 rounded-sm text-center overflow-hidden border border-white/10 px-5 py-2.5 font-[family-name:var(--font-orbitron)] text-sm tracking-widest text-white font-medium uppercase transition-colors duration-300 hover:border-white";
 
   const content = (
     <>
@@ -161,7 +162,16 @@ function MalaysiaTime() {
   );
 }
 
-export function HeroSection() {
+const DEFAULT_HERO = {
+  title: "THE HOME OF SOLANA",
+  subtitle: "BUILDERS IN MALAYSIA",
+  description: "We connect local talent with global opportunities. Build, earn, and grow alongside Malaysia's most ambitious web3 community.",
+};
+
+export function HeroSection({ content }: { content?: SiteContent | null }) {
+  const titleLine1 = content?.title || DEFAULT_HERO.title;
+  const titleLine2 = content?.subtitle || DEFAULT_HERO.subtitle;
+  const description = content?.description || DEFAULT_HERO.description;
   const { loading } = useLoading();
   const heroLogoRef = useHeroLogoRef();
   const backgroundRef = useRef<HTMLDivElement>(null);
@@ -229,10 +239,18 @@ export function HeroSection() {
             "linear-gradient(to top, rgba(0,0,0,0.5) 20%, transparent 100%)",
         }}
       />
+      {/* Dark overlay - gradient from black 50% to transparent over bottom 30% */}
+      <div
+        className=" block md:hidden absolute bottom-0 inset-0 pointer-events-none bg-size-[100%_40%] bg-bottom bg-no-repeat"
+        style={{
+          backgroundImage:
+            "linear-gradient(to top, #080B0E 20%, #080B0E00 100%)",
+        }}
+      />
 
       {/* Content */}
       <div className="relative z-10 flex flex-col h-screen px-8 md:px-16 py-10 ">
-        <div className="flex items-center justify-between w-full gap-4 pt-4">
+        <div className="hidden md:flex items-center justify-between w-full gap-4 pt-4">
           <div className="flex-1 min-w-0 h-px bg-white/20" />
           {/* Top: Logo centered */}
           <div className="flex items-center justify-center">
@@ -267,25 +285,25 @@ export function HeroSection() {
           </nav>
 
           {/* Center: Logo + Heading */}
-          <div className="flex-1 flex flex-col items-center justify-center gap-4 relative">
+          <div className="flex-1 flex flex-col items-center justify-center gap-4 relative -translate-y-6 md:translate-y-0">
             <div
               ref={heroLogoRef}
-              className="absolute -top-[100%] left-1/2 -translate-x-1/2 w-[120px] h-[120px] flex items-center justify-center"
+              className="absolute -top-[100%] left-1/2 -translate-x-1/2 w-[80px] h-[80px] md:w-[120px] md:h-[120px] flex items-center justify-center"
             >
               <Image
                 src="/white-stmy-logo.png"
                 alt="Superteam Malaysia"
                 width={120}
                 height={120}
-                className="w-[120px] h-auto"
+                className="w-[80px] md:w-[120px] h-auto"
                 priority
               />
             </div>
             <h2
-              className="h-[120px] font-[family-name:var(--font-orbitron)] font-black text-2xl md:text-4xl xl:text-5xl text-white leading-tight text-center flex flex-col items-center justify-center gap-0"
-              aria-label="THE HOME OF SOLANA BUILDERS IN MALAYSIA"
+              className="h-[80px] md:h-[120px] font-[family-name:var(--font-orbitron)] font-black text-lg md:text-4xl xl:text-5xl text-white leading-tight text-center flex flex-col items-center justify-center gap-0"
+              aria-label={`${titleLine1} ${titleLine2}`}
             >
-              {(["THE HOME OF SOLANA", "BUILDERS IN MALAYSIA"] as const).map((line, i) => (
+              {[titleLine1, titleLine2].map((line, i) => (
                 <div key={i} className="overflow-hidden" style={{ lineHeight: 1.25 }}>
                   <motion.span
                     className="block text-center will-change-transform"
@@ -317,18 +335,34 @@ export function HeroSection() {
 
 
         {/* Bottom: CTA buttons + Subtitle */}
-        <div className="flex items-center justify-between w-full gap-4">
-          <CtaButton href="/dashboard" text="CONNECT" />
-        <div className="flex-1 min-w-0 h-px bg-white/20" />
-
-
-          <p className="hidden md:block w-lg xl:w-2xl text-center md:text-xs xl:text-base text-white/80 leading-relaxed uppercase font-inter font-medium">
-            We connect local talent with global opportunities. Build, earn, and grow alongside Malaysia&apos;s most ambitious web3 community.
+        {/* Mobile: paragraph above buttons with 10px gap */}
+        <div className="flex flex-col items-center w-full md:hidden">
+          <p
+            className="w-full max-w-md text-center text-[10px] text-white/80 leading-relaxed uppercase font-inter font-semibold"
+            style={{ marginBottom: 10 }}
+          >
+            {description}
           </p>
-        <div className="flex-1 min-w-0 h-px bg-white/20" />
-
-
-          <CtaButton href="https://t.me/superteammy" text="EXPLORE" external />
+          <div className="flex items-center justify-between w-full gap-4">
+            <CtaButton href="/dashboard" text="CONNECT" />
+            <CtaButton href="https://t.me/superteammy" text="EXPLORE" external />
+          </div>
+        </div>
+        {/* Desktop: paragraph 10px above buttons */}
+        <div className="hidden md:flex flex-col items-center w-full">
+          
+          <div className="flex items-center justify-between w-full gap-4">
+            <CtaButton href="/dashboard" text="CONNECT" />
+            <div className="flex-1 min-w-0 h-px bg-white/20" />
+            <p
+            className="w-lg xl:w-2xl text-center text-xs xl:text-base text-white/80 leading-relaxed uppercase font-inter font-medium"
+            style={{ marginBottom: 10 }}
+          >
+            {description}
+          </p>
+            <div className="flex-1 min-w-0 h-px bg-white/20" />
+            <CtaButton href="https://t.me/superteammy" text="EXPLORE" external />
+          </div>
         </div>
       </div>
     </section>
