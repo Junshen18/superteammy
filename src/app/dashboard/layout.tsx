@@ -26,8 +26,10 @@ import { supabase } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { UnicornBackground } from "@/components/ui/UnicornBackground";
 
 const sidebarLinks: { href: string; label: string; icon: typeof LayoutDashboard; badge?: string }[] = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
@@ -62,6 +64,7 @@ export default function DashboardLayout({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
+  const [showLoginPanel, setShowLoginPanel] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -72,6 +75,13 @@ export default function DashboardLayout({
     const stored = localStorage.getItem("dashboard-sidebar-collapsed");
     if (stored !== null) setSidebarCollapsed(stored === "true");
   }, []);
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      const t = setTimeout(() => setShowLoginPanel(true), 5000);
+      return () => clearTimeout(t);
+    }
+  }, [isLoading, isAuthenticated]);
 
   async function checkAuth() {
     const { data: { user } } = await supabase.auth.getUser();
@@ -137,11 +147,25 @@ export default function DashboardLayout({
 
   if (!isAuthenticated) {
     return (
-      <div className="dark min-h-screen flex items-center justify-center px-6" style={{ backgroundColor: "#080B0E" }}>
-        <Card className="w-full max-w-md">
+      <div className="dark min-h-screen flex items-center justify-center px-6 relative">
+        <UnicornBackground />
+        {showLoginPanel && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="relative z-10 flex flex-col items-center gap-6 w-full max-w-md"
+        >
+          <Image
+            src="/white-stmy-logo.png"
+            alt="Superteam Malaysia"
+            width={128}
+            height={128}
+            className="h-14 w-14 object-contain"
+          />
+          <Card className="w-full">
           <CardHeader>
-            <CardTitle>Sign In</CardTitle>
-            <CardDescription>Sign in to access your dashboard</CardDescription>
+            <CardTitle>Sign in to access Superteam Member&apos;s dashboard</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
@@ -172,6 +196,8 @@ export default function DashboardLayout({
             </form>
           </CardContent>
         </Card>
+        </motion.div>
+        )}
       </div>
     );
   }

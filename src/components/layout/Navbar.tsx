@@ -217,14 +217,27 @@ function SocialLink({
 }
 
 const SCROLL_UP_THRESHOLD = 150;
+const MOBILE_BREAKPOINT = 768;
 
 export function Navbar() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [visible, setVisible] = useState(false);
   const [pastHero, setPastHero] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const lastScrollY = useRef(0);
   const scrollUpAccum = useRef(0);
+
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
+    const handler = () => setIsMobile(mq.matches);
+    const id = requestAnimationFrame(() => setIsMobile(mq.matches));
+    mq.addEventListener("change", handler);
+    return () => {
+      cancelAnimationFrame(id);
+      mq.removeEventListener("change", handler);
+    };
+  }, []);
 
   const isMembersPage = pathname === "/members";
 
@@ -278,7 +291,11 @@ export function Navbar() {
     };
   }, [menuOpen]);
 
-  const showBar = isMembersPage || (visible && pastHero) || menuOpen;
+  const showBar =
+    isMembersPage ||
+    (visible && pastHero) ||
+    menuOpen ||
+    (isMobile && !pastHero);
 
   return (
     <>
@@ -297,7 +314,7 @@ export function Navbar() {
         >
           {/* Mobile: Black header with logo + text + flag + hamburger */}
           <div
-            className="flex md:hidden items-center justify-between w-full rounded-md bg-background/50 backdrop-blur-xl px-4 py-3 "
+            className="flex md:hidden items-center justify-between w-full rounded-md px-4 py-3 "
             style={{ minHeight: 48 }}
           >
             <Link href="/" className="flex items-center gap-2 text-white">
