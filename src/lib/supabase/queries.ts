@@ -1,5 +1,5 @@
 import { createServerClient } from "./server";
-import type { Member, Event, Partner, Stat, Testimonial, FAQ, Profile, Invite, LookupTag, SubskillTag, Project, Perk } from "../types";
+import type { Member, Event, Partner, Stat, Testimonial, FAQ, Profile, Invite, LookupTag, SubskillTag, Project, Perk, CommunityTweet } from "../types";
 
 export async function getMembers(): Promise<Member[]> {
   const supabase = await createServerClient();
@@ -31,46 +31,61 @@ export async function getFeaturedMembers(): Promise<Member[]> {
 }
 
 export async function getEvents(opts?: { includeArchived?: boolean }): Promise<Event[]> {
-  const supabase = await createServerClient();
-  let q = supabase.from("events").select("*").order("date", { ascending: false });
-  if (!opts?.includeArchived) {
-    q = q.or("is_archived.is.null,is_archived.eq.false");
-  }
-  const { data, error } = await q;
+  try {
+    const supabase = await createServerClient();
+    let q = supabase.from("events").select("*").order("date", { ascending: false });
+    if (!opts?.includeArchived) {
+      q = q.or("is_archived.is.null,is_archived.eq.false");
+    }
+    const { data, error } = await q;
 
-  if (error) {
-    console.error("Failed to fetch events:", error.message);
+    if (error) {
+      console.error("Failed to fetch events:", error.message);
+      return [];
+    }
+    return data as Event[];
+  } catch (err) {
+    console.error("Failed to fetch events:", err instanceof Error ? err.message : "Unknown error");
     return [];
   }
-  return data as Event[];
 }
 
 export async function getPartners(): Promise<Partner[]> {
-  const supabase = await createServerClient();
-  const { data, error } = await supabase
-    .from("partners")
-    .select("*")
-    .order("display_order", { ascending: true });
+  try {
+    const supabase = await createServerClient();
+    const { data, error } = await supabase
+      .from("partners")
+      .select("*")
+      .order("display_order", { ascending: true });
 
-  if (error) {
-    console.error("Failed to fetch partners:", error.message);
+    if (error) {
+      console.error("Failed to fetch partners:", error.message);
+      return [];
+    }
+    return data as Partner[];
+  } catch (err) {
+    console.error("Failed to fetch partners:", err instanceof Error ? err.message : "Unknown error");
     return [];
   }
-  return data as Partner[];
 }
 
 export async function getStats(): Promise<Stat[]> {
-  const supabase = await createServerClient();
-  const { data, error } = await supabase
-    .from("stats")
-    .select("*")
-    .order("display_order", { ascending: true });
+  try {
+    const supabase = await createServerClient();
+    const { data, error } = await supabase
+      .from("stats")
+      .select("*")
+      .order("display_order", { ascending: true });
 
-  if (error) {
-    console.error("Failed to fetch stats:", error.message);
+    if (error) {
+      console.error("Failed to fetch stats:", error.message);
+      return [];
+    }
+    return data as Stat[];
+  } catch (err) {
+    console.error("Failed to fetch stats:", err instanceof Error ? err.message : "Unknown error");
     return [];
   }
-  return data as Stat[];
 }
 
 export async function getTestimonials(): Promise<Testimonial[]> {
@@ -87,36 +102,65 @@ export async function getTestimonials(): Promise<Testimonial[]> {
   return data as Testimonial[];
 }
 
-export async function getFAQs(): Promise<FAQ[]> {
-  const supabase = await createServerClient();
-  const { data, error } = await supabase
-    .from("faqs")
-    .select("*")
-    .order("display_order", { ascending: true });
+export async function getCommunityTweets(): Promise<CommunityTweet[]> {
+  try {
+    const supabase = await createServerClient();
+    const { data, error } = await supabase
+      .from("community_tweets")
+      .select("*")
+      .order("display_order", { ascending: true });
 
-  if (error) {
-    console.error("Failed to fetch FAQs:", error.message);
+    if (error) {
+      console.error("Failed to fetch community tweets:", error.message);
+      return [];
+    }
+    return data as CommunityTweet[];
+  } catch (err) {
+    console.error("Failed to fetch community tweets:", err instanceof Error ? err.message : "Unknown error");
     return [];
   }
-  return data as FAQ[];
+}
+
+export async function getFAQs(): Promise<FAQ[]> {
+  try {
+    const supabase = await createServerClient();
+    const { data, error } = await supabase
+      .from("faqs")
+      .select("*")
+      .order("display_order", { ascending: true });
+
+    if (error) {
+      console.error("Failed to fetch FAQs:", error.message);
+      return [];
+    }
+    return data as FAQ[];
+  } catch (err) {
+    console.error("Failed to fetch FAQs:", err instanceof Error ? err.message : "Unknown error");
+    return [];
+  }
 }
 
 export async function getProfiles(): Promise<Profile[]> {
-  const supabase = await createServerClient();
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("onboarding_completed", true)
-    .or("is_active.is.null,is_active.eq.true")
-    .order("member_number", { ascending: true, nullsFirst: false });
+  try {
+    const supabase = await createServerClient();
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("onboarding_completed", true)
+      .or("is_active.is.null,is_active.eq.true")
+      .order("member_number", { ascending: true, nullsFirst: false });
 
-  if (error) {
-    console.error("Failed to fetch profiles:", error.message);
+    if (error) {
+      console.error("Failed to fetch profiles:", error.message);
+      return [];
+    }
+
+    const profiles = data as Profile[];
+    return attachProfileRelations(supabase, profiles);
+  } catch (err) {
+    console.error("Failed to fetch profiles:", err instanceof Error ? err.message : "Unknown error");
     return [];
   }
-
-  const profiles = data as Profile[];
-  return attachProfileRelations(supabase, profiles);
 }
 
 export async function getAllProfiles(): Promise<Profile[]> {

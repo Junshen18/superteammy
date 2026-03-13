@@ -128,6 +128,17 @@ export interface Testimonial {
   is_featured: boolean;
 }
 
+export interface CommunityTweet {
+  id: string;
+  tweet_id: string;
+  display_order: number;
+  created_at: string;
+  /** Fetched from X API for admin display */
+  author_name?: string;
+  author_handle?: string;
+  text_excerpt?: string;
+}
+
 export interface FAQ {
   id: string;
   question: string;
