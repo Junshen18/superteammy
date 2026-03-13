@@ -304,6 +304,11 @@ const testimonials = [
   },
 ];
 
+const communityTweets = [
+  { tweet_id: "1668408059125702661", display_order: 1 },
+  { tweet_id: "1629307668568633344", display_order: 2 },
+];
+
 const faqs = [
   {
     question: "What is Superteam Malaysia?",
@@ -373,6 +378,7 @@ async function main() {
     "partners",
     "stats",
     "testimonials",
+    "community_tweets",
     "faqs",
   ];
   for (const table of tables) {
@@ -385,6 +391,7 @@ async function main() {
   await seedTable("partners", partners);
   await seedTable("stats", stats);
   await seedTable("testimonials", testimonials);
+  await seedTable("community_tweets", communityTweets);
   await seedTable("faqs", faqs);
 
   console.log("\n3. Seeding dashboard metrics (for admin charts)...");
