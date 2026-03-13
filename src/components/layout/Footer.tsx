@@ -148,7 +148,9 @@ export function Footer() {
                     Let&apos;s build the next generation of the internet
                     together on Solana.
                   </p>
-                  <div className="flex gap-4">
+                  <div className="flex gap-1 flex-col">
+                    <p className="text-xs font-semibold md:text-[16px] text-white">Follow us on</p>
+                    <div className="flex gap-4">
                     {socialLinks.map((link) => (
                       <a
                         key={link.href}
@@ -167,6 +169,7 @@ export function Footer() {
                         />
                       </a>
                     ))}
+                    </div>
                   </div>
                 </div>
 
