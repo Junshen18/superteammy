@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { MemberProfileCard } from "@/components/members/MemberProfileCard";
 import { MemberFilters } from "@/components/members/MemberFilters";
-import type { Profile, LookupTag } from "@/lib/types";
+import type { Profile, SubskillTag } from "@/lib/types";
 
 const CARD_WIDTH = 320;
 
@@ -43,38 +43,48 @@ function ScalableCardWrapper({ children }: { children: React.ReactNode }) {
 
 interface MembersPageClientProps {
   profiles: Profile[];
-  availableSkills: LookupTag[];
+  availableSubskills: SubskillTag[];
 }
 
-export function MembersPageClient({ profiles, availableSkills }: MembersPageClientProps) {
+export function MembersPageClient({ profiles, availableSubskills }: MembersPageClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
+  const [selectedSubskillIds, setSelectedSubskillIds] = useState<string[]>([]);
 
-  const filterOptions = useMemo(() => {
-    const skillNames = availableSkills.map((s) => s.name);
-    return ["All", "Core Team", ...skillNames];
-  }, [availableSkills]);
+  const filterOptions = useMemo(
+    () => ["All", "Core Team", "Frontend", "Backend", "Blockchain", "Design", "Content", "Growth", "Community"],
+    []
+  );
 
   const filteredProfiles = useMemo(() => {
     return profiles.filter((profile) => {
       const displayName = profile.nickname || profile.real_name || "";
       const roleNames = (profile.roles || []).map((r) => r.name).join(" ");
       const companyNames = (profile.companies || []).map((c) => c.name).join(" ");
+      const skillNames = (profile.skills || []).map((s) => s.name).join(" ");
+      const subskillNames = (profile.subskills || []).map((s) => s.name).join(" ");
 
       const matchesSearch =
         searchQuery === "" ||
         displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         companyNames.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        roleNames.toLowerCase().includes(searchQuery.toLowerCase());
+        roleNames.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        skillNames.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        subskillNames.toLowerCase().includes(searchQuery.toLowerCase());
 
-      const matchesFilter =
+      const matchesCategoryFilter =
         activeFilter === "All" ||
         (activeFilter === "Core Team" && (profile.user_role === "admin" || profile.user_role === "super_admin")) ||
-        (profile.skills || []).some((s) => s.name === activeFilter);
+        (activeFilter !== "All" && (profile.roles || []).some((r) => r.name === activeFilter));
 
-      return matchesSearch && matchesFilter;
+      const profileSubskillIds = new Set((profile.subskills || []).map((s) => s.id));
+      const matchesSubskillFilter =
+        selectedSubskillIds.length === 0 ||
+        selectedSubskillIds.some((id) => profileSubskillIds.has(id));
+
+      return matchesSearch && matchesCategoryFilter && matchesSubskillFilter;
     });
-  }, [profiles, searchQuery, activeFilter]);
+  }, [profiles, searchQuery, activeFilter, selectedSubskillIds]);
 
   return (
     <div className="relative min-h-screen pt-28 pb-24">
@@ -111,6 +121,9 @@ export function MembersPageClient({ profiles, availableSkills }: MembersPageClie
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
             filterOptions={filterOptions}
+            subskillOptions={availableSubskills}
+            selectedSubskillIds={selectedSubskillIds}
+            onSubskillChange={setSelectedSubskillIds}
           />
         </motion.div>
 
