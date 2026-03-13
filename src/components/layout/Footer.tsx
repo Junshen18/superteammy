@@ -116,8 +116,8 @@ export function Footer() {
               />
               <div className="relative z-10 flex flex-col h-full justify-between mx-auto w-full px-6 lg:px-20 pt-12 pb-10">
                 {/* Logo + socials */}
-                <div className="flex flex-col items-left  gap-2 mb-10">
-                  <Link href="/" className="flex items-center gap-2">
+                <div className="flex flex-col items-left gap-5 mb-10">
+                  <Link href="/" className="flex items-center ">
                     <Image
                       src="/superteam.svg"
                       alt="Superteam"

@@ -285,9 +285,8 @@ export function Navbar() {
         >
           {/* Left: Connect */}
           <NavCtaLink
-            href="https://t.me/superteammy"
+            href="/dashboard"
             text="CONNECT"
-            external
           />
 
           {/* Center: Logo */}
