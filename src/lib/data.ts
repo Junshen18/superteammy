@@ -152,7 +152,7 @@ export const samplePartners: Partner[] = [
 ];
 
 export const sampleStats: Stat[] = [
-  { id: '1', label: 'Community Members', value: 500, suffix: '+', icon: 'users', display_order: 1 },
+  { id: '1', label: 'Members', value: 500, suffix: '+', icon: 'users', display_order: 1 },
   { id: '2', label: 'Events Hosted', value: 20, suffix: '+', icon: 'calendar', display_order: 2 },
   { id: '3', label: 'Projects Built', value: 50, suffix: '+', icon: 'code', display_order: 3 },
   { id: '4', label: 'Bounties Completed', value: 100, suffix: '+', icon: 'trophy', display_order: 4 },
