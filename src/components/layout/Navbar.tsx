@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { Menu, Calendar } from "lucide-react";
 import { useScrambleText } from "@/hooks/useScrambleText";
 
 const navLinks = [
@@ -19,20 +20,30 @@ const navLinks = [
 ];
 
 const socialLinks = [
-  { href: "https://x.com/SuperteamMY", label: "X" },
-  { href: "https://t.me/superteammy", label: "TELEGRAM" },
-  { href: "https://lu.ma/superteammy", label: "LUMA" },
-  { href: "https://www.instagram.com/superteammalaysia", label: "INSTAGRAM" },
-  { href: "https://discord.gg/superteammy", label: "DISCORD" },
+  { href: "https://x.com/SuperteamMY", label: "X", icon: "/icons/x.svg" },
+  {
+    href: "https://t.me/superteammy",
+    label: "TELEGRAM",
+    icon: "/icons/telegram.svg",
+  },
+  {
+    href: "https://lu.ma/superteammy",
+    label: "LUMA",
+    icon: "calendar" as const,
+  },
+  {
+    href: "https://www.instagram.com/superteammalaysia",
+    label: "INSTAGRAM",
+    icon: "/icons/instagram.svg",
+  },
+  {
+    href: "https://discord.gg/superteammy",
+    label: "DISCORD",
+    icon: "/icons/discord.svg",
+  },
 ];
 
-function NavButton({
-  text,
-  onClick,
-}: {
-  text: string;
-  onClick?: () => void;
-}) {
+function NavButton({ text, onClick }: { text: string; onClick?: () => void }) {
   const canReplayRef = useRef(true);
   const { display, replay } = useScrambleText(text, { playOnMount: true });
 
@@ -58,9 +69,7 @@ function NavButton({
         className="absolute inset-0 z-0 origin-left scale-x-0 bg-white transition-transform duration-300 ease-out group-hover:scale-x-100"
         aria-hidden
       />
-      <span
-        className="relative z-10 pointer-events-none transition-colors duration-300 group-hover:text-black font-mono"
-      >
+      <span className="relative z-10 pointer-events-none transition-colors duration-300 group-hover:text-black font-mono">
         {display}
       </span>
     </button>
@@ -99,9 +108,7 @@ function NavCtaLink({
         className="absolute inset-0 z-0 origin-left scale-x-0 bg-white transition-transform duration-300 ease-out group-hover:scale-x-100"
         aria-hidden
       />
-      <span
-        className="relative z-10 pointer-events-none transition-colors duration-300 group-hover:text-black font-mono"
-      >
+      <span className="relative z-10 pointer-events-none transition-colors duration-300 group-hover:text-black font-mono">
         {display}
       </span>
     </>
@@ -172,7 +179,10 @@ function MenuScrambleLink({
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        <span className="w-1.5 h-1.5 shrink-0 rounded-full bg-current opacity-0 transition-opacity duration-200 group-hover:opacity-100" aria-hidden />
+        <span
+          className="w-1.5 h-1.5 shrink-0 rounded-full bg-current opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+          aria-hidden
+        />
         <span className="pointer-events-none font-mono">{display}</span>
       </Link>
     </motion.div>
@@ -221,7 +231,9 @@ export function Navbar() {
   const handleScroll = useCallback(() => {
     const currentY = window.scrollY;
     const hero = document.getElementById("hero");
-    const heroBottom = hero ? hero.offsetTop + hero.offsetHeight : window.innerHeight;
+    const heroBottom = hero
+      ? hero.offsetTop + hero.offsetHeight
+      : window.innerHeight;
 
     const isPastHero = currentY > heroBottom - 100;
     setPastHero(isPastHero);
@@ -276,36 +288,54 @@ export function Navbar() {
         style={{ padding: "12px 16px" }}
       >
         <div
-          className="mx-auto flex items-center justify-between rounded-sm bg-background/80 backdrop-blur-xl px-4 py-2.5 pointer-events-auto transition-all duration-500 ease-out"
+          className="mx-auto flex items-center justify-between pointer-events-auto transition-all duration-500 ease-out rounded-sm md:px-4 md:py-2.5"
           style={{
             maxWidth: 1280,
             opacity: showBar ? 1 : 0,
             transform: showBar ? "translateY(0)" : "translateY(-20px)",
           }}
         >
-          {/* Left: Connect */}
-          <NavCtaLink
-            href="/dashboard"
-            text="CONNECT"
-          />
+          {/* Mobile: Black header with logo + text + flag + hamburger */}
+          <div
+            className="flex md:hidden items-center justify-between w-full rounded-md bg-background/50 backdrop-blur-xl px-4 py-3 "
+            style={{ minHeight: 48 }}
+          >
+            <Link href="/" className="flex items-center gap-2 text-white">
+              <Image
+                src="/superteam.svg"
+                alt="Superteam Malaysia"
+                width={140}
+                height={24}
+                className="h-4 w-auto"
+              />
+            </Link>
+            <button
+              onClick={() => setMenuOpen((v) => !v)}
+              className="p-1 text-white hover:opacity-80 transition-opacity"
+              aria-label={menuOpen ? "Close menu" : "Open menu"}
+            >
+              <Menu className="w-6 h-6" strokeWidth={2} />
+            </button>
+          </div>
 
-          {/* Center: Logo */}
-          <Link href="/" className="flex items-center justify-center">
-            <Image
-              src="/superteam.svg"
-              alt="Superteam Malaysia"
-              width={140}
-              height={16}
-              className="h-4 w-auto"
-              priority
+          {/* Desktop: Connect + Logo + Menu */}
+          <div className="hidden md:flex items-center justify-between w-full rounded-sm bg-background/80 backdrop-blur-xl px-4 py-2.5">
+            <NavCtaLink href="/dashboard" text="CONNECT" />
+            <Link href="/" className="flex items-center justify-center">
+              <Image
+                src="/superteam.svg"
+                alt="Superteam Malaysia"
+                width={140}
+                height={16}
+                className="h-4 w-auto"
+                priority
+              />
+            </Link>
+            <NavButton
+              text={menuOpen ? "CLOSE" : "MENU"}
+              onClick={() => setMenuOpen((v) => !v)}
             />
-          </Link>
-
-          {/* Right: Menu */}
-          <NavButton
-            text={menuOpen ? "CLOSE" : "MENU"}
-            onClick={() => setMenuOpen((v) => !v)}
-          />
+          </div>
         </div>
       </nav>
 
@@ -324,7 +354,7 @@ export function Navbar() {
 
             {/* Logo */}
             <motion.div
-              className="flex justify-center pt-6 pb-8"
+              className="flex justify-center pt-6 pb-8 pl-4"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3, duration: 0.4 }}
@@ -351,8 +381,41 @@ export function Navbar() {
               ))}
             </div>
 
-            {/* Socials */}
-            <div className="flex items-center justify-center gap-6 md:gap-10 pb-10 pt-6">
+            {/* Socials - Mobile: icons */}
+            <div className="flex md:hidden items-center justify-center gap-6 pb-10 pt-6">
+              {socialLinks.map((link, i) => (
+                <motion.a
+                  key={link.href}
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    delay: 0.5 + i * 0.06,
+                    duration: 0.3,
+                    ease: "easeOut",
+                  }}
+                  className="text-white/50 hover:text-solana-green transition-colors duration-300 p-2"
+                  aria-label={link.label}
+                >
+                  {link.icon === "calendar" ? (
+                    <Calendar className="w-6 h-6 text-white" strokeWidth={2} />
+                  ) : (
+                    <Image
+                      src={link.icon}
+                      alt=""
+                      width={24}
+                      height={24}
+                      className="w-6 h-6 object-contain"
+                    />
+                  )}
+                </motion.a>
+              ))}
+            </div>
+
+            {/* Socials - Desktop: text */}
+            <div className="hidden md:flex items-center justify-center gap-6 md:gap-10 pb-10 pt-6">
               {socialLinks.map((link, i) => (
                 <SocialLink
                   key={link.href}
