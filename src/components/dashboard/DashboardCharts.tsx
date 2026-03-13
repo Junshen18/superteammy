@@ -256,7 +256,7 @@ export function DashboardCharts({ stats, range = "6m" }: { stats: DashboardStats
                   <ChartTooltip
                     content={
                       <ChartTooltipContent
-                        labelFormatter={(v) => formatMonth(v)}
+                        labelFormatter={(v) => formatMonth(String(v))}
                         formatter={(value) => [value, "Members"]}
                       />
                     }
