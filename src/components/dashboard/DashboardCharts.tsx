@@ -294,7 +294,7 @@ export function DashboardCharts({ stats, range = "6m" }: { stats: DashboardStats
               />
               <YAxis tickLine={false} axisLine={false} tickMargin={6} width={28} />
               <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-              <ChartLegend content={<ChartLegendContent />} />
+              <ChartLegend content={(props) => <ChartLegendContent payload={props.payload} verticalAlign={props.verticalAlign} />} />
               <Bar
                 dataKey="virtual"
                 stackId="a"
