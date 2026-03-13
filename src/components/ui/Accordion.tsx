@@ -79,7 +79,7 @@ export function AccordionItem({
 
   if (isCard) {
     return (
-      <div className="rounded-xl bg-white/6 border border-white/20 shadow-sm mb-4 last:mb-0">
+      <div className="rounded-xl bg-transparent border border-white/20 shadow-sm mb-4 last:mb-0">
         {content}
       </div>
     );
