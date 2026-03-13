@@ -58,13 +58,10 @@ export function MemberProfileCard({
 
   const [isFlipped, setIsFlipped] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [frontCardHeight, setFrontCardHeight] = useState<number | null>(null);
-  const frontCardRef = useRef<HTMLDivElement>(null);
   const lenisRef = useLenisRef();
 
   const handleCardClick = () => {
     if (expandOnClick) {
-      setFrontCardHeight(null);
       setIsExpanded(true);
     } else {
       setIsFlipped((prev) => !prev);
@@ -101,19 +98,6 @@ export function MemberProfileCard({
     };
   }, [isExpanded, lenisRef]);
 
-  // Sync back card height to front card when expanded
-  useEffect(() => {
-    if (!isExpanded || !frontCardRef.current) return;
-    const el = frontCardRef.current;
-    const ro = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        setFrontCardHeight(entry.contentRect.height);
-      }
-    });
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [isExpanded]);
-
   const cardContent = (
     <>
       {/* Front face */}
@@ -125,7 +109,7 @@ export function MemberProfileCard({
         }}
       >
         <div className="absolute z-10 w-full h-full pointer-events-none" style={{ backgroundImage: "url('/images/noise.png')" }} />
-        <div className="relative p-5 flex flex-col items-center z-20">
+        <div className="relative p-5 flex flex-col items-center h-full min-h-0 z-20">
           <div className="w-full flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Image src="/superteam.svg" alt="Superteam Malaysia" width={150} height={24} />
@@ -183,30 +167,28 @@ export function MemberProfileCard({
             <div className="w-full h-0.25 bg-white/20" />
             <div className="w-1.5 h-1.5 bg-white/20" />
           </div>
-          {hasAnyLink && (
-            <div className="flex items-center justify-center gap-4">
-              {profile.twitter_url && (
-                <a href={profile.twitter_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-white/70 hover:text-white transition-colors" aria-label="X">
-                  <Image src="/icons/x.svg" alt="" width={16} height={16} className="shrink-0" />
-                </a>
-              )}
-              {profile.linkedin_url && (
-                <a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-white/70 hover:text-white transition-colors" aria-label="LinkedIn">
-                  <Image src="/images/linkedin.svg" alt="" width={16} height={16} className="shrink-0" />
-                </a>
-              )}
-              {profile.telegram_url && (
-                <a href={profile.telegram_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-white/70 hover:text-white transition-colors" aria-label="Telegram">
-                  <Image src="/icons/telegram.svg" alt="" width={16} height={16} className="shrink-0" />
-                </a>
-              )}
-              {profile.website_url && (
-                <a href={profile.website_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-white/70 hover:text-white transition-colors" aria-label="Portfolio">
-                  <Link2 className="w-4 h-4" />
-                </a>
-              )}
-            </div>
-          )}
+          <div className="flex items-center justify-center gap-4 mt-auto min-h-[28px]">
+            {profile.twitter_url && (
+              <a href={profile.twitter_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-white/70 hover:text-white transition-colors" aria-label="X">
+                <Image src="/icons/x.svg" alt="" width={16} height={16} className="shrink-0" />
+              </a>
+            )}
+            {profile.linkedin_url && (
+              <a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-white/70 hover:text-white transition-colors" aria-label="LinkedIn">
+                <Image src="/images/linkedin.svg" alt="" width={16} height={16} className="shrink-0" />
+              </a>
+            )}
+            {profile.telegram_url && (
+              <a href={profile.telegram_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-white/70 hover:text-white transition-colors" aria-label="Telegram">
+                <Image src="/icons/telegram.svg" alt="" width={16} height={16} className="shrink-0" />
+              </a>
+            )}
+            {profile.website_url && (
+              <a href={profile.website_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-white/70 hover:text-white transition-colors" aria-label="Portfolio">
+                <Link2 className="w-4 h-4" />
+              </a>
+            )}
+          </div>
         </div>
       </div>
     </>
@@ -220,11 +202,11 @@ export function MemberProfileCard({
         boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.1), 0 4px 24px rgba(0,0,0,0.4)",
       }}
     >
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0" style={{ opacity: 0.15 }}>
-        <Image src="/white-stmy-logo.png" alt="" width={160} height={160} className="object-contain" />
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0" style={{ opacity: 0.06 }}>
+        <Image src="/white-stmy-logo.png" alt="" width={100} height={100} className="object-contain" />
       </div>
       <div className="absolute z-10 w-full h-full pointer-events-none" style={{ backgroundImage: "url('/images/noise.png')" }} />
-      <div className="relative flex-1 min-h-0 z-20 overflow-y-auto overscroll-contain" onClick={(e) => e.stopPropagation()}>
+      <div className="relative flex-1 min-h-0 z-30 overflow-y-auto overscroll-contain" onClick={(e) => e.stopPropagation()}>
         <div className="p-5 flex flex-col">
           <div className="flex justify-center items-center mb-3">
             <div className="w-1.5 h-1.5 bg-white/20" />
@@ -247,7 +229,7 @@ export function MemberProfileCard({
             return (
               <div className="mb-3">
                 <p className="text-[10px] font-bold text-white/90 uppercase tracking-wider mb-1.5">Skill</p>
-                <div className="flex flex-wrap gap-1 max-h-16">
+                <div className="flex flex-wrap gap-1">
                   {visible.map((s) => (
                     <span key={s.id} className="px-2 py-0.5 rounded bg-white/10 text-white text-[10px] uppercase shrink-0">{s.name}</span>
                   ))}
@@ -303,7 +285,7 @@ export function MemberProfileCard({
         >
           {/* Front face */}
           <div
-            className="absolute inset-0 w-full h-full rounded-2xl overflow-hidden"
+            className="absolute inset-0 w-full h-full rounded-2xl overflow-hidden relative"
             style={{
               backfaceVisibility: "hidden",
               WebkitBackfaceVisibility: "hidden",
@@ -315,7 +297,7 @@ export function MemberProfileCard({
               className="absolute z-10 w-full h-full pointer-events-none"
               style={{ backgroundImage: "url('/images/noise.png')" }}
             />
-            <div className="relative p-5 flex flex-col items-center z-20">
+            <div className="relative p-5 flex flex-col items-center h-full min-h-0 z-20">
         {/* Header: logo + flag + member number */}
         <div className="w-full flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
@@ -409,58 +391,56 @@ export function MemberProfileCard({
         </div>
 
         {/* Social links */}
-        {hasAnyLink && (
-          <div className="flex items-center justify-center gap-4">
-            {profile.twitter_url && (
-              <a
-                href={profile.twitter_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                className="text-white/70 hover:text-white transition-colors"
-                aria-label="X"
-              >
-                <Image src="/icons/x.svg" alt="" width={16} height={16} className="shrink-0" />
-              </a>
-            )}
-            {profile.linkedin_url && (
-              <a
-                href={profile.linkedin_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                className="text-white/70 hover:text-white transition-colors"
-                aria-label="LinkedIn"
-              >
-                <Image src="/images/linkedin.svg" alt="" width={16} height={16} className="shrink-0" />
-              </a>
-            )}
-            {profile.telegram_url && (
-              <a
-                href={profile.telegram_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                className="text-white/70 hover:text-white transition-colors"
-                aria-label="Telegram"
-              >
-                <Image src="/icons/telegram.svg" alt="" width={16} height={16} className="shrink-0" />
-              </a>
-            )}
-            {profile.website_url && (
-              <a
-                href={profile.website_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                className="text-white/70 hover:text-white transition-colors"
-                aria-label="Portfolio"
-              >
-                <Link2 className="w-4 h-4" />
-              </a>
-            )}
-          </div>
-        )}
+        <div className="flex items-center justify-center gap-4 mt-auto min-h-[28px]">
+          {profile.twitter_url && (
+            <a
+              href={profile.twitter_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="text-white/70 hover:text-white transition-colors"
+              aria-label="X"
+            >
+              <Image src="/icons/x.svg" alt="" width={16} height={16} className="shrink-0" />
+            </a>
+          )}
+          {profile.linkedin_url && (
+            <a
+              href={profile.linkedin_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="text-white/70 hover:text-white transition-colors"
+              aria-label="LinkedIn"
+            >
+              <Image src="/images/linkedin.svg" alt="" width={16} height={16} className="shrink-0" />
+            </a>
+          )}
+          {profile.telegram_url && (
+            <a
+              href={profile.telegram_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="text-white/70 hover:text-white transition-colors"
+              aria-label="Telegram"
+            >
+              <Image src="/icons/telegram.svg" alt="" width={16} height={16} className="shrink-0" />
+            </a>
+          )}
+          {profile.website_url && (
+            <a
+              href={profile.website_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="text-white/70 hover:text-white transition-colors"
+              aria-label="Portfolio"
+            >
+              <Link2 className="w-4 h-4" />
+            </a>
+          )}
+        </div>
             </div>
           </div>
 
@@ -475,16 +455,16 @@ export function MemberProfileCard({
               boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.1), 0 4px 24px rgba(0,0,0,0.4)",
             }}
           >
-            {/* Centered logo watermark at 15% opacity */}
+            {/* Centered logo watermark - subtle so it doesn't obscure content */}
             <div
               className="absolute inset-0 flex items-center justify-center pointer-events-none z-0"
-              style={{ opacity: 0.15 }}
+              style={{ opacity: 0.06 }}
             >
               <Image
                 src="/white-stmy-logo.png"
                 alt=""
-                width={160}
-                height={160}
+                width={100}
+                height={100}
                 className="object-contain"
               />
             </div>
@@ -493,7 +473,7 @@ export function MemberProfileCard({
               style={{ backgroundImage: "url('/images/noise.png')" }}
             />
             <div
-              className="relative flex-1 min-h-0 z-20 overflow-y-auto overscroll-contain"
+              className="relative flex-1 min-h-0 z-30 overflow-y-auto overscroll-contain"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="p-5 flex flex-col">
@@ -521,14 +501,14 @@ export function MemberProfileCard({
                 return (
                   <div className="mb-3">
                     <p className="text-[10px] font-bold text-white/90 uppercase tracking-wider mb-1.5">Skill</p>
-                    <div className="flex flex-wrap gap-1 max-h-[4rem] overflow-hidden">
+                    <div className="flex flex-wrap gap-1">
                       {visible.map((s) => (
                         <span key={s.id} className="px-2 py-0.5 rounded bg-white/10 text-white text-[10px] uppercase shrink-0">
                           {s.name}
                         </span>
                       ))}
                       {remaining > 0 && (
-                        <span className=" px-2 py-0.5 rounded bg-white/10 text-white text-[10px] shrink-0">
+                        <span className="px-2 py-0.5 rounded bg-white/10 text-white text-[10px] shrink-0">
                           +{remaining}
                         </span>
                       )}
@@ -628,18 +608,15 @@ export function MemberProfileCard({
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
                 transition={{ duration: 0.25, ease: "easeOut" }}
-                className="flex gap-6 max-w-[90vw] overflow-x-auto overflow-y-hidden overscroll-contain"
+                className="flex gap-6 max-w-[90vw] overflow-x-auto overflow-y-auto overscroll-contain scrollbar-hide"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div ref={frontCardRef} className="w-[320px] h-fit shrink-0">
+                <div className="w-[320px] h-fit shrink-0">
                   <div className="relative w-full rounded-2xl overflow-hidden">
                     {cardContent}
                   </div>
                 </div>
-                <div
-                  className="w-[320px] shrink-0"
-                  style={{ height: frontCardHeight ?? 520 }}
-                >
+                <div className="w-[320px] shrink-0 min-h-[420px]">
                   <div className="relative w-full h-full rounded-2xl overflow-hidden">
                     {backContent}
                   </div>

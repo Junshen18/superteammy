@@ -30,17 +30,17 @@ export function MemberFilters({
   const filters = filterOptions || defaultFilters;
 
   return (
-    <div className="space-y-6">
+    <div className="md:space-y-6 space-y-4">
       <div className="relative">
         <input
           type="text"
           placeholder="Search by name, role, or company..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="w-full px-5 py-3.5 rounded-xl bg-surface/50 border border-white/5 text-white placeholder-muted-dark focus:outline-none focus:border-solana-purple/30 focus:ring-1 focus:ring-solana-purple/20 transition-all text-sm"
+          className="w-full px-5 md:py-3.5 py-2 md:rounded-xl rounded-md bg-surface/50 border border-white/5 text-white placeholder-muted-dark focus:outline-none focus:border-solana-purple/30 focus:ring-1 focus:ring-solana-purple/20 transition-all text-sm"
         />
         <svg
-          className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-dark"
+          className="absolute right-4 top-1/2 -translate-y-1/2 md:w-5 md:h-5 w-4 h-4 text-muted-dark"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -54,12 +54,12 @@ export function MemberFilters({
         </svg>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex gap-2 overflow-x-auto overscroll-x-contain scrollbar-hide md:overflow-visible md:flex-wrap pb-1">
         {filters.map((filter) => (
           <button
             key={filter}
             onClick={() => onFilterChange(filter)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+            className={`cursor-pointer shrink-0 px-4 md:py-2.5 py-2 md:rounded-lg rounded-md md:text-sm text-[12px] font-medium transition-all duration-200 whitespace-nowrap ${
               activeFilter === filter
                 ? "bg-solana-purple text-white"
                 : "bg-surface/50 text-muted hover:text-white hover:bg-surface border border-white/5"

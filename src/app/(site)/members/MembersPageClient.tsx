@@ -1,10 +1,45 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { MemberProfileCard } from "@/components/members/MemberProfileCard";
 import { MemberFilters } from "@/components/members/MemberFilters";
 import type { Profile, LookupTag } from "@/lib/types";
+
+const CARD_WIDTH = 320;
+
+function ScalableCardWrapper({ children }: { children: React.ReactNode }) {
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (!el) return;
+    const updateScale = () => {
+      const width = el.offsetWidth;
+      setScale(Math.min(1, width / CARD_WIDTH));
+    };
+    updateScale();
+    const ro = new ResizeObserver(updateScale);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={wrapperRef}
+      className="relative w-full "
+      style={{ aspectRatio: `${CARD_WIDTH}/470` }}
+    >
+      <div
+        className="absolute left-1/2 top-0 w-[320px] origin-top"
+        style={{ transform: `translateX(-50%) scale(${scale})` }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
 
 interface MembersPageClientProps {
   profiles: Profile[];
@@ -53,12 +88,12 @@ export function MembersPageClient({ profiles, availableSkills }: MembersPageClie
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1 }}
-          className="text-center mb-12"
+          className="text-center md:mb-8 mb-4"
         >
-          <h1 className="font-[family-name:var(--font-orbitron)] text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
+          <h1 className="font-[family-name:var(--font-orbitron)] uppercase text-3xl md:text-4xl lg:text-7xl font-black text-white mb-3">
             Member Directory
           </h1>
-          <p className="text-lg text-muted max-w-xl mx-auto">
+          <p className="md:text-lg text-[14px] text-white/90 md:max-w-xl px-4 md:px-0 mx-auto">
             Discover the talented builders, creators, and founders driving the
             Solana ecosystem in Malaysia
           </p>
@@ -68,7 +103,7 @@ export function MembersPageClient({ profiles, availableSkills }: MembersPageClie
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="mb-10"
+          className="md:mb-8 mb-4"
         >
           <MemberFilters
             activeFilter={activeFilter}
@@ -89,9 +124,11 @@ export function MembersPageClient({ profiles, availableSkills }: MembersPageClie
         </motion.p> */}
 
         {filteredProfiles.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center">
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredProfiles.map((profile, index) => (
-              <MemberProfileCard key={profile.id} profile={profile} index={index} expandOnClick />
+              <ScalableCardWrapper key={profile.id}>
+                <MemberProfileCard profile={profile} index={index} expandOnClick />
+              </ScalableCardWrapper>
             ))}
           </div>
         ) : (
