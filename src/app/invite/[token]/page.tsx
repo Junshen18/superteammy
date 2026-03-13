@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { motion } from "framer-motion";
 import {
   Card,
   CardContent,
@@ -15,6 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { UnicornBackground } from "@/components/ui/UnicornBackground";
 
 export default function InvitePage() {
   const { token } = useParams<{ token: string }>();
@@ -29,6 +31,12 @@ export default function InvitePage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
+  const [showForm, setShowForm] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setShowForm(true), 5000);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     validateToken();
@@ -97,11 +105,15 @@ export default function InvitePage() {
   }
 
   return (
-    <div
-      className="dark min-h-screen flex items-center justify-center px-6"
-      style={{ backgroundColor: "#080B0E" }}
-    >
-      <div className="w-full max-w-md">
+    <div className="dark min-h-screen flex items-center justify-center px-6 relative">
+      <UnicornBackground />
+      {showForm && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="relative z-10 w-full max-w-md"
+      >
         <div className="flex justify-center mb-8">
           <Image
             src="/superteam.svg"
@@ -218,7 +230,8 @@ export default function InvitePage() {
             </CardContent>
           </Card>
         )}
-      </div>
+      </motion.div>
+      )}
     </div>
   );
 }
