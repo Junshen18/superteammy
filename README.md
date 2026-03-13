@@ -1,4 +1,4 @@
-# Superteam Malaysia
+# Superteam Malaysia Landing Page
 
 > The digital headquarters for Solana builders in Malaysia — built with Next.js 16, Supabase, and modern web animations.
 
